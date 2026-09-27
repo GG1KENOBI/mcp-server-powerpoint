@@ -357,12 +357,13 @@ OPTIONS:
 
 ```text
 DESCRIPTION:
-Slide master commands: read theme color palettes or read/edit the title and body
-placeholder fonts on the presentation's slide master, and read/edit the slide
-master's background fill color. Operates within an already-open . Changes here
-apply to every slide that inherits from the master (i.e. any slide that does not
-itself override the property), which is the practical "edit the master, not each
-slide" workflow PowerPoint's COM object model supports safely
+Slide master commands: read theme color palettes and theme fonts, or read/edit
+the title and body placeholder fonts on the presentation's slide master, and
+read/edit the slide master's background fill color. Operates within an
+already-open . Changes here apply to every slide that inherits from the master
+(i.e. any slide that does not itself override the property), which is the
+practical "edit the master, not each slide" workflow PowerPoint's COM object
+model supports safely
 
 USAGE:
     pptcli master <ACTION> [OPTIONS]
@@ -419,7 +420,7 @@ OPTIONS:
                                                 set-gradient-background)
         --master-index <MASTERINDEX>            (required for: delete-master)
                                                 (valid for: get-theme-colors,
-                                                delete-master)
+                                                get-theme-fonts, delete-master)
     -o, --output <PATH>                         Write output to file instead of
                                                 stdout. For image results,
                                                 decodes and saves as binary file
