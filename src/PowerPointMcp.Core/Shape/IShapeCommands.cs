@@ -3,13 +3,14 @@ using Sbroenne.PowerPointMcp.Core.Attributes;
 namespace Sbroenne.PowerPointMcp.Core.Shape;
 
 /// <summary>
-/// Shape commands: create, inspect, align, distribute, format, group, link, and edit native placeholders.
+/// Shape commands: create, inspect, align, distribute, format, group, link, create editable
+/// WordArt, rotate shapes in 3D, and edit native placeholders.
 /// Operates within an already-open IPresentationBatch, targeting a specific slide by
 /// its 1-based index.
 /// </summary>
 [ServiceCategory("shape", "Shape")]
 [McpTool("shape", Title = "Shape Operations", Destructive = true, Category = "content",
-    Description = "Create, inspect, align, distribute, format, group, link, and edit native placeholders on a slide.")]
+    Description = "Create, inspect, align, distribute, format, group, link, create editable WordArt, rotate shapes in 3D, and edit native placeholders on a slide.")]
 public interface IShapeCommands
 {
     /// <summary>Adds a rectangle shape to the given slide.</summary>
@@ -17,6 +18,23 @@ public interface IShapeCommands
 
     /// <summary>Adds a text box with the given text to the given slide.</summary>
     ShapeOperationResult AddTextBox(ComInterop.Session.IPresentationBatch batch, int slideIndex, float left, float top, float width, float height, string text);
+
+    /// <summary>
+    /// Adds editable WordArt using an <c>MsoPresetTextEffect</c> member name from
+    /// <c>msoTextEffect1</c> through <c>msoTextEffect50</c>. PowerPoint determines the resulting
+    /// shape's width and height from the text and font settings.
+    /// </summary>
+    ShapeOperationResult AddTextEffect(
+        ComInterop.Session.IPresentationBatch batch,
+        int slideIndex,
+        string presetEffect,
+        string text,
+        string fontName,
+        float fontSize,
+        float left,
+        float top,
+        bool bold = false,
+        bool italic = false);
 
     /// <summary>
     /// Adds a non-rectangle "auto shape" (oval, diamond, arrow, star bracket, etc.) to the given
@@ -95,6 +113,25 @@ public interface IShapeCommands
 
     /// <summary>Gets a shape's rotation, in degrees clockwise from its upright position.</summary>
     ShapeOperationResult GetRotation(ComInterop.Session.IPresentationBatch batch, int slideIndex, int shapeIndex);
+
+    /// <summary>
+    /// Sets one or more axes of a shape's 3D rotation. At least one axis must be supplied;
+    /// omitted axes remain unchanged.
+    /// <paramref name="rotationX"/> and <paramref name="rotationY"/> must be between -90 and 90 degrees.
+    /// This is independent of the shape's 2D <c>Rotation</c> property.
+    /// </summary>
+    [ServiceAction("set-3d-rotation")]
+    ShapeOperationResult Set3DRotation(
+        ComInterop.Session.IPresentationBatch batch,
+        int slideIndex,
+        int shapeIndex,
+        float? rotationX = null,
+        float? rotationY = null,
+        float? rotationZ = null);
+
+    /// <summary>Gets a shape's 3D rotation around the X, Y, and Z axes.</summary>
+    [ServiceAction("get-3d-rotation")]
+    ShapeOperationResult Get3DRotation(ComInterop.Session.IPresentationBatch batch, int slideIndex, int shapeIndex);
 
     /// <summary>Flips a shape horizontally or vertically in place (<paramref name="direction"/>: <c>"horizontal"</c> or <c>"vertical"</c>).</summary>
     ShapeOperationResult Flip(ComInterop.Session.IPresentationBatch batch, int slideIndex, int shapeIndex, string direction);
