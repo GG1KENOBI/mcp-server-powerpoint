@@ -99,7 +99,7 @@ saved.
 | Document metadata (built-in and custom properties) | `presentation` property actions |
 | String metadata on presentations, slides, or shapes | owner-specific `set-tag`/`get-tag`/`list-tags`/`delete-tag` actions |
 | Add/count/delete/duplicate/reorder slides | `slide(action: "add-blank"/"get-count"/"delete"/"duplicate"/"move-to")` |
-| Per-slide background color, sections | `slide(action: "set-background-color"/"get-background-color"/"add-section"/"rename-section"/"delete-section"/"get-section-count"/"get-section-name")` |
+| Per-slide visibility, background color, sections | `slide(action: "set-hidden"/"set-display-master-shapes"/"set-background-color"/"get-background-color"/"add-section"/"rename-section"/"delete-section"/"get-section-count"/"get-section-name")` |
 | Add/count/delete/move/resize shapes | `shape(action: "add-rectangle"/"add-text-box"/"add-auto-shape"/"add-line"/"add-connector"/"get-count"/"delete"/"set-position"/"set-size")` |
 | Align/distribute shapes | `shape(action: "align"/"distribute", shape_indexes: [...], align_cmd/distribute_cmd: "...", relative_to_slide: true|false)` |
 | Format shapes and manage links | `shape(action: "set-fill"/"get-fill"/"set-line"/"get-line"/"copy-formatting"/"set-rotation"/"get-rotation"/"flip"/"set-z-order"/"set-shadow"/"get-shadow"/"set-glow"/"get-glow"/"set-reflection"/"get-reflection"/"set-soft-edge"/"get-soft-edge"/"set-bevel"/"get-bevel"/"group"/"ungroup"/"set-name"/"get-name"/"set-alt-text"/"get-alt-text"/"set-hyperlink"/"get-hyperlink"/"remove-hyperlink"/"get-link-info"/"update-link"/"break-link"/"set-link-auto-update")` |
