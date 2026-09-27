@@ -867,10 +867,10 @@ OPTIONS:
 
 ```text
 DESCRIPTION:
-Shape commands: create, inspect, align, distribute, format, group, link, create
-editable WordArt, rotate shapes in 3D, and edit native placeholders. Operates
-within an already-open IPresentationBatch, targeting a specific slide by its
-1-based index
+Shape commands: create, inspect, align, distribute, format, group, merge, link,
+create editable WordArt, rotate shapes in 3D, and edit native placeholders.
+Operates within an already-open IPresentationBatch, targeting a specific slide
+by its 1-based index
 
 USAGE:
     pptcli shape <ACTION> [OPTIONS]
@@ -1112,9 +1112,10 @@ OPTIONS:
         --depth <DEPTH>                                  (valid for: set-bevel)
         --inset <INSET>                                  (valid for: set-bevel)
         --shape-indexes <SHAPEINDEXES>                   (required for: group,
-                                                         align, distribute)
-                                                         (valid for: group,
-                                                         align, distribute)
+                                                         align, distribute,
+                                                         merge) (valid for:
+                                                         group, align,
+                                                         distribute, merge)
                                                          (JSON format)
         --align-cmd <ALIGNCMD>                           (required for: align)
                                                          (valid for: align)
@@ -1123,6 +1124,8 @@ OPTIONS:
         --distribute-cmd <DISTRIBUTECMD>                 (required for:
                                                          distribute) (valid for:
                                                          distribute)
+        --merge-type <MERGETYPE>                         (required for: merge)
+                                                         (valid for: merge)
         --name <NAME>                                    (required for:
                                                          set-name) (valid for:
                                                          set-name)

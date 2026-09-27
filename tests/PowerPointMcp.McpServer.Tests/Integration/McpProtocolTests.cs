@@ -364,6 +364,30 @@ public sealed class McpProtocolTests : IAsyncLifetime, IAsyncDisposable
     }
 
     [Fact]
+    public async Task ShapeSchema_ExposesMergeActionAndItsParameters()
+    {
+        var tools = await _client!.ListToolsAsync(cancellationToken: _cts.Token);
+        var shape = Assert.Single(tools, tool => tool.Name == "shape");
+        var properties = shape.JsonSchema.GetProperty("properties");
+        var actions = properties
+            .GetProperty("action")
+            .GetProperty("enum")
+            .EnumerateArray()
+            .Select(value => value.GetString())
+            .ToHashSet(StringComparer.Ordinal);
+
+        Assert.Contains("merge", actions);
+
+        foreach (string parameter in new[] { "shape_indexes", "merge_type" })
+        {
+            Assert.True(
+                properties.TryGetProperty(parameter, out var schema),
+                $"The shape tool schema is missing '{parameter}'.");
+            Assert.Contains("merge", schema.GetProperty("description").GetString());
+        }
+    }
+
+    [Fact]
     public async Task CustomShowSchema_ExposesActionsAndParameters()
     {
         var tools = await _client!.ListToolsAsync(cancellationToken: _cts.Token);

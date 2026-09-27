@@ -3,14 +3,14 @@ using Sbroenne.PowerPointMcp.Core.Attributes;
 namespace Sbroenne.PowerPointMcp.Core.Shape;
 
 /// <summary>
-/// Shape commands: create, inspect, align, distribute, format, group, link, create editable
+/// Shape commands: create, inspect, align, distribute, format, group, merge, link, create editable
 /// WordArt, rotate shapes in 3D, and edit native placeholders.
 /// Operates within an already-open IPresentationBatch, targeting a specific slide by
 /// its 1-based index.
 /// </summary>
 [ServiceCategory("shape", "Shape")]
 [McpTool("shape", Title = "Shape Operations", Destructive = true, Category = "content",
-    Description = "Create, inspect, align, distribute, format, group, link, create editable WordArt, rotate shapes in 3D, and edit native placeholders on a slide.")]
+    Description = "Create, inspect, align, distribute, format, group, merge, link, create editable WordArt, rotate shapes in 3D, and edit native placeholders on a slide.")]
 public interface IShapeCommands
 {
     /// <summary>Adds a rectangle shape to the given slide.</summary>
@@ -228,6 +228,19 @@ public interface IShapeCommands
 
     /// <summary>Ungroups a previously-grouped shape back into its individual member shapes.</summary>
     ShapeOperationResult Ungroup(ComInterop.Session.IPresentationBatch batch, int slideIndex, int shapeIndex);
+
+    /// <summary>
+    /// Merges two or more shapes on the given slide into new shape(s) using a boolean drawing
+    /// operation, identified by their 1-based shape indexes. The inputs are consumed and replaced
+    /// by the result. <paramref name="mergeType"/> is an <c>MsoMergeCmd</c> enum member name:
+    /// <c>"msoMergeUnion"</c>, <c>"msoMergeCombine"</c>, <c>"msoMergeIntersect"</c>,
+    /// <c>"msoMergeSubtract"</c>, or <c>"msoMergeFragment"</c> (which may produce multiple shapes).
+    /// </summary>
+    ShapeOperationResult Merge(
+        ComInterop.Session.IPresentationBatch batch,
+        int slideIndex,
+        IReadOnlyList<int> shapeIndexes,
+        string mergeType);
 
     /// <summary>Sets a shape's name (as shown in the Selection Pane).</summary>
     ShapeOperationResult SetName(ComInterop.Session.IPresentationBatch batch, int slideIndex, int shapeIndex, string name);

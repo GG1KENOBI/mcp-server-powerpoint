@@ -4,7 +4,7 @@ Reference for the `slide` tool (`add-blank`, `get-count`, `delete`, `duplicate`,
 `set-background-color`, `get-background-color`, visibility, sections, comments, import) and the `shape` tool
 (`add-rectangle`, `add-text-box`, `add-text-effect`, `add-auto-shape`, `add-line`, `add-connector`,
 `add-attached-connector`, `get-count`,
-`delete`, `set-position`, `set-size`, `align`, `distribute`, plus the fill/line/rotation/flip/z-order/shadow/glow/
+`delete`, `set-position`, `set-size`, `align`, `distribute`, `merge`, plus the fill/line/rotation/flip/z-order/shadow/glow/
 reflection/soft-edge/bevel/group/name/alt-text/hyperlink formatting actions below).
 
 ## Slide Actions
@@ -130,6 +130,7 @@ Export the slide to verify the result after arranging it.
 | `shape` | `get-bevel` | `session_id`, `slide_index`, `shape_index` | Returns the shape's current `bevelTypeName`, `bevelDepth`, `bevelInset`. |
 | `shape` | `group` | `session_id`, `slide_index`, `shape_indexes` (JSON array of 1-based indices, at least 2) | Groups multiple shapes into one. Returns the new total `shapeCount` on the slide — **not** the grouped shape's index (see NoPIA note below). |
 | `shape` | `ungroup` | `session_id`, `slide_index`, `shape_index` | Splits a group back into its member shapes. Returns `ungroupedShapeCount` (members produced) and the new total `shapeCount`. |
+| `shape` | `merge` | `session_id`, `slide_index`, `shape_indexes` (JSON array of unique 1-based indices, at least 2), `merge_type` | Merges shapes with PowerPoint's `MsoMergeCmd`: `msoMergeUnion`, `msoMergeCombine`, `msoMergeIntersect`, `msoMergeSubtract`, or `msoMergeFragment`. Returns `mergeTypeName`, `mergedShapeCount`, and the new total `shapeCount`. Inputs are consumed and replaced by the result; `msoMergeFragment` can produce multiple shapes. |
 | `shape` | `set-name` | `session_id`, `slide_index`, `shape_index`, `name` | Sets the shape's name (as shown in PowerPoint's Selection Pane). Returns `name`. |
 | `shape` | `get-name` | `session_id`, `slide_index`, `shape_index` | Returns the shape's current name. |
 | `shape` | `set-alt-text` | `session_id`, `slide_index`, `shape_index`, `alt_text` | Sets the shape's alternative text (accessibility description). Returns `altText`. |

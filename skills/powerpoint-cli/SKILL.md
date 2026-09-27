@@ -324,9 +324,9 @@ Actions: `get-settings`, `set-size`, `set-first-slide-number`, `get-footer`, `se
 | `--show-on-title-slide` |  |
 
 
-### `shape` — Shape commands: create, inspect, align, distribute, format, group, link, create editable WordArt, rotate shapes in 3D, and edit native placeholders. Operates within an already-open IPresentationBatch, targeting a specific slide by its 1-based index.
+### `shape` — Shape commands: create, inspect, align, distribute, format, group, merge, link, create editable WordArt, rotate shapes in 3D, and edit native placeholders. Operates within an already-open IPresentationBatch, targeting a specific slide by its 1-based index.
 
-Actions: `add-rectangle`, `add-text-box`, `add-text-effect`, `add-auto-shape`, `add-line`, `add-connector`, `add-attached-connector`, `get-count`, `delete`, `set-position`, `set-size`, `set-fill`, `get-fill`, `set-line`, `get-line`, `copy-formatting`, `set-rotation`, `get-rotation`, `set-3d-rotation`, `get-3d-rotation`, `flip`, `set-z-order`, `set-shadow`, `get-shadow`, `set-glow`, `get-glow`, `set-reflection`, `get-reflection`, `set-soft-edge`, `get-soft-edge`, `set-bevel`, `get-bevel`, `group`, `align`, `distribute`, `ungroup`, `set-name`, `get-name`, `set-alt-text`, `get-alt-text`, `set-hyperlink`, `get-hyperlink`, `remove-hyperlink`, `get-link-info`, `update-link`, `break-link`, `set-link-auto-update`, `list-placeholders`, `set-placeholder-text`, `set-placeholder-image`, `set-tag`, `get-tag`, `list-tags`, `delete-tag`
+Actions: `add-rectangle`, `add-text-box`, `add-text-effect`, `add-auto-shape`, `add-line`, `add-connector`, `add-attached-connector`, `get-count`, `delete`, `set-position`, `set-size`, `set-fill`, `get-fill`, `set-line`, `get-line`, `copy-formatting`, `set-rotation`, `get-rotation`, `set-3d-rotation`, `get-3d-rotation`, `flip`, `set-z-order`, `set-shadow`, `get-shadow`, `set-glow`, `get-glow`, `set-reflection`, `get-reflection`, `set-soft-edge`, `get-soft-edge`, `set-bevel`, `get-bevel`, `group`, `align`, `distribute`, `ungroup`, `merge`, `set-name`, `get-name`, `set-alt-text`, `get-alt-text`, `set-hyperlink`, `get-hyperlink`, `remove-hyperlink`, `get-link-info`, `update-link`, `break-link`, `set-link-auto-update`, `list-placeholders`, `set-placeholder-text`, `set-placeholder-image`, `set-tag`, `get-tag`, `list-tags`, `delete-tag`
 
 | Flag | Description |
 |------|-------------|
@@ -375,10 +375,11 @@ Actions: `add-rectangle`, `add-text-box`, `add-text-effect`, `add-auto-shape`, `
 | `--bevel-type` | (required for: set-bevel) |
 | `--depth` |  |
 | `--inset` |  |
-| `--shape-indexes` | (required for: group, align, distribute) |
+| `--shape-indexes` | (required for: group, align, distribute, merge) |
 | `--align-cmd` | (required for: align) |
 | `--relative-to-slide` |  |
 | `--distribute-cmd` | (required for: distribute) |
+| `--merge-type` | (required for: merge) |
 | `--name` | (required for: set-name) |
 | `--alt-text` | (required for: set-alt-text) |
 | `--address` | (required for: set-hyperlink) |

@@ -1,12 +1,12 @@
 ---
 title: Complete Feature Reference
-description: 17 MCP tools with 202 operations across 17 domains for live PowerPoint automation through single action-dispatch tools.
+description: 17 MCP tools with 203 operations across 17 domains for live PowerPoint automation through single action-dispatch tools.
 keywords: "PowerPoint MCP features, PowerPoint automation, presentation tool, slide tool, shape tool, media tool, chart tool, SmartArt tool, export-to-verify"
 ---
 
 # Complete Feature Reference
 
-PowerPoint MCP Server exposes **17 MCP tools with 202 operations across 17 domains**.
+PowerPoint MCP Server exposes **17 MCP tools with 203 operations across 17 domains**.
 Every domain is a **single action-dispatch tool** that takes an `action` parameter — for example
 `presentation(action="open", filePath="C:\\Decks\\q4.pptx")` or
 `chart(action="add-chart", session_id="...", slide_index=2, ...)`.
@@ -22,7 +22,7 @@ The CLI mirrors the same domain model:
 |------|-----|----------------|----------------|-----------|
 | `presentation` | 20 | Session lifecycle, Save As/copy, templates, advisory Mark as Final, document properties, string tags | `presentation(action="...", ...)` | `pptcli session <action> ...` |
 | `slide` | 25 | Slide lifecycle, visibility, backgrounds, sections, comments, import, string tags | `slide(action="...", session_id=..., ...)` | `pptcli slide <action> -s <SESSION_ID> ...` |
-| `shape` | 54 | Shapes, free-floating and attached connectors, WordArt, 3D rotation, alignment/distribution, styling, grouping, hyperlinks, linked pictures, placeholders, string tags | `shape(action="...", session_id=..., ...)` | `pptcli shape <action> -s <SESSION_ID> ...` |
+| `shape` | 55 | Shapes, free-floating and attached connectors, WordArt, 3D rotation, alignment/distribution, styling, grouping, boolean merging, hyperlinks, linked pictures, placeholders, string tags | `shape(action="...", session_id=..., ...)` | `pptcli shape <action> -s <SESSION_ID> ...` |
 | `textframe` | 22 | Text content, find/replace, and text formatting | `textframe(action="...", session_id=..., ...)` | `pptcli textframe <action> -s <SESSION_ID> ...` |
 | `table` | 12 | Table creation and cell editing/formatting | `table(action="...", session_id=..., ...)` | `pptcli table <action> -s <SESSION_ID> ...` |
 | `notes` | 2 | Speaker notes | `notes(action="...", session_id=..., ...)` | `pptcli notes <action> -s <SESSION_ID> ...` |
@@ -107,9 +107,9 @@ remaining edit/read actions use that `sessionId`.
 `clear-comments`, `set-hidden`, `set-display-master-shapes`, `import-from-file`, `set-tag`,
 `get-tag`, `list-tags`, `delete-tag`
 
-### `shape` tool (54 operations)
+### `shape` tool (55 operations)
 
-Use `shape` for shape creation, WordArt, geometry, alignment/distribution, styling, 3D effects, grouping,
+Use `shape` for shape creation, WordArt, geometry, alignment/distribution, styling, 3D effects, grouping and boolean merging,
 naming, alt text, hyperlinks, linked pictures, and placeholders.
 
 **Exact action order:** `add-rectangle`, `add-text-box`, `add-text-effect`, `add-auto-shape`, `add-line`,
@@ -117,7 +117,7 @@ naming, alt text, hyperlinks, linked pictures, and placeholders.
 `set-line`, `get-line`, `copy-formatting`, `set-rotation`, `get-rotation`, `set-3d-rotation`,
 `get-3d-rotation`, `flip`, `set-z-order`, `set-shadow`,
 `get-shadow`, `set-glow`, `get-glow`, `set-reflection`, `get-reflection`, `set-soft-edge`,
-`get-soft-edge`, `set-bevel`, `get-bevel`, `group`, `align`, `distribute`, `ungroup`, `set-name`, `get-name`,
+`get-soft-edge`, `set-bevel`, `get-bevel`, `group`, `align`, `distribute`, `ungroup`, `merge`, `set-name`, `get-name`,
 `set-alt-text`, `get-alt-text`, `set-hyperlink`, `get-hyperlink`, `remove-hyperlink`,
 `get-link-info`, `update-link`, `break-link`, `set-link-auto-update`, `list-placeholders`,
 `set-placeholder-text`, `set-placeholder-image`, `set-tag`, `get-tag`, `list-tags`, `delete-tag`

@@ -372,6 +372,29 @@ public sealed class GeneratedContractTests
         ServiceRegistry.Shape.ValidateActionArguments(
             "copy-formatting",
             """{"slideIndex":1,"sourceShapeIndex":2,"targetShapeIndex":3}""");
+    }
+
+    [Fact]
+    public void ShapeMerge_HasGeneratedCliAndServiceWiring()
+    {
+        Assert.Contains("merge", ServiceRegistry.Shape.ValidActions);
+
+        Assert.Equal(
+            "shape.merge",
+            ServiceRegistry.Shape.RouteCliArgs(
+                "merge",
+                slideIndex: 1,
+                shapeIndexes: [1, 2],
+                mergeType: "msoMergeUnion").Command);
+
+        ServiceRegistry.Shape.ValidateActionArguments(
+            "merge",
+            """{"slideIndex":1,"shapeIndexes":[1,2],"mergeType":"msoMergeUnion"}""");
+
+        Assert.Throws<ArgumentException>(() =>
+            ServiceRegistry.Shape.ValidateActionArguments(
+                "merge",
+                """{"slideIndex":1,"shapeIndexes":[1,2]}"""));
 
         Assert.Throws<ArgumentException>(() =>
             ServiceRegistry.Shape.ValidateActionArguments(
