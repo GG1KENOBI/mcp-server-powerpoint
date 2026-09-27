@@ -2,7 +2,8 @@
 
 Reference for the `slide` tool (`add-blank`, `get-count`, `delete`, `duplicate`, `move-to`,
 `set-background-color`, `get-background-color`, visibility, sections, comments, import) and the `shape` tool
-(`add-rectangle`, `add-text-box`, `add-text-effect`, `add-auto-shape`, `add-line`, `add-connector`, `get-count`,
+(`add-rectangle`, `add-text-box`, `add-text-effect`, `add-auto-shape`, `add-line`, `add-connector`,
+`add-attached-connector`, `get-count`,
 `delete`, `set-position`, `set-size`, `align`, `distribute`, plus the fill/line/rotation/flip/z-order/shadow/glow/
 reflection/soft-edge/bevel/group/name/alt-text/hyperlink formatting actions below).
 
@@ -62,6 +63,7 @@ slide(action: "rename-section", session_id: ..., section_index: 2, section_name:
 | `shape` | `add-auto-shape` | `session_id`, `slide_index`, `shape_type`, `left`, `top`, `width`, `height` | Adds any non-rectangle built-in shape (oval, diamond, arrow, star bracket, etc.) by its `MsoAutoShapeType` name. Returns `shapeIndex` and echoes `shapeTypeName`. See "Auto Shape Types" below for the supported name list. |
 | `shape` | `add-line` | `session_id`, `slide_index`, `begin_x`, `begin_y`, `end_x`, `end_y` | Straight line between two points. Returns `shapeIndex` and echoes `beginX`/`beginY`/`endX`/`endY`. |
 | `shape` | `add-connector` | `session_id`, `slide_index`, `connector_type`, `begin_x`, `begin_y`, `end_x`, `end_y` | Adds a connector shape (`msoConnectorStraight`, `msoConnectorElbow`, or `msoConnectorCurve`) between two points. Free-floating — not glued to other shapes. Returns `shapeIndex` and echoes `connectorTypeName`. |
+| `shape` | `add-attached-connector` | `session_id`, `slide_index`, `connector_type`, `begin_shape_index`, `begin_connection_site`, `end_shape_index`, `end_connection_site` | Adds a connector whose endpoints stay attached to connection sites on two existing shapes, so it follows them when they move. Shape indexes and connection sites are 1-based; each site must be within the selected shape's `ConnectionSiteCount`. Returns `shapeIndex` and echoes `connectorTypeName`. |
 | `shape` | `get-count` | `session_id`, `slide_index` | Number of shapes currently on the slide (`shapeCount`). |
 | `shape` | `delete` | `session_id`, `slide_index`, `shape_index` (1-based) | Removes one shape; later shapes on that slide shift down by one index. |
 | `shape` | `set-position` | `session_id`, `slide_index`, `shape_index`, `left`, `top` | Moves an existing shape. |
@@ -202,7 +204,7 @@ z-order members — bring/send relative to text — are intentionally not expose
 Passing an unrecognized string returns `success: false` — double-check spelling rather than
 guessing variants (e.g. star/callout shapes are not in this curated set).
 
-For lines and connectors, `connector_type` (add-connector only) must be one of
+For lines and connectors, `connector_type` must be one of
 `msoConnectorStraight`, `msoConnectorElbow`, or `msoConnectorCurve`.
 
 ## Shape Indexing Within a Slide

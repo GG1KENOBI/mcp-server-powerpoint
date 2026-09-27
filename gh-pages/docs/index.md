@@ -146,7 +146,7 @@ powerpointmcpserver.dev.
 
 </div>
 
-[See all 17 tools (201 operations) across 17 domains :material-arrow-right:](features.md){ .md-button .md-button--primary }
+[See all 17 tools (202 operations) across 17 domains :material-arrow-right:](features.md){ .md-button .md-button--primary }
 
 ## See it in action
 
