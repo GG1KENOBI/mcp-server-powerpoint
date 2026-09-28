@@ -364,6 +364,37 @@ public sealed class McpProtocolTests : IAsyncLifetime, IAsyncDisposable
     }
 
     [Fact]
+    public async Task ShapeSchema_ExposesDuplicateAndCopyToSlideActions()
+    {
+        var tools = await _client!.ListToolsAsync(cancellationToken: _cts.Token);
+        var shape = Assert.Single(tools, tool => tool.Name == "shape");
+        var properties = shape.JsonSchema.GetProperty("properties");
+        var actions = properties
+            .GetProperty("action")
+            .GetProperty("enum")
+            .EnumerateArray()
+            .Select(value => value.GetString())
+            .ToHashSet(StringComparer.Ordinal);
+
+        Assert.Contains("duplicate", actions);
+        Assert.Contains("copy-to-slide", actions);
+
+        foreach (string parameter in new[] { "slide_index", "shape_index", "target_slide_index" })
+        {
+            Assert.True(
+                properties.TryGetProperty(parameter, out var schema),
+                $"The shape tool schema is missing '{parameter}'.");
+            Assert.True(
+                schema.TryGetProperty("description", out _),
+                $"The shape tool schema field '{parameter}' must be documented.");
+        }
+
+        Assert.Contains(
+            "copy-to-slide",
+            properties.GetProperty("target_slide_index").GetProperty("description").GetString());
+    }
+
+    [Fact]
     public async Task ShapeSchema_ExposesMergeActionAndItsParameters()
     {
         var tools = await _client!.ListToolsAsync(cancellationToken: _cts.Token);
