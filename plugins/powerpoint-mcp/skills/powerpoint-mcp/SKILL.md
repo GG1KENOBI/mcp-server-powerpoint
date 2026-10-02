@@ -33,7 +33,7 @@ action-dispatch: one tool per domain, called as `tool(action:
 | 4. Format | `textframe(action: "set-font-size"/"set-bold"/"set-font-color")`, `layout(action: "set-layout")` | Apply formatting | After adding content |
 | 5. Animate (optional) | `animation(action: "add-effect"/"set-transition")` | Add entrance/emphasis/exit effects or slide transitions | After content/layout are final |
 | 6. Annotate | `notes(action: "set-notes-text")` | Add speaker notes | After each slide's content is final |
-| 7. Verify | `export(action: "export-slide-to-image"/"export-all-slides-to-images")` | Visually confirm the result | After any visual change |
+| 7. Verify | `slide(action: "check-layout")`, then `export(action: "export-slide-to-image"/"export-all-slides-to-images")` | Fix measured layout issues, then visually confirm the result | After any visual change |
 | 8. Save & close | `presentation(action: "close", save: true)` | Persist and release the session | Always last |
 
 ## Preconditions
@@ -68,11 +68,12 @@ for the OS process to exit.
 
 ### Rule 5: Verify Visually — This Is the Differentiator
 
-`export(action: "export-slide-to-image"/"export-all-slides-to-images", ...)` renders real
-PowerPoint output to an image. This is the only reliable way to catch overlapping shapes, text
-overflow, or chart layout problems — text-only inspection tools (`textframe(action: "get-text",
-...)`, `shape(action: "get-count", ...)`) cannot. See
-[Export & Verify](./references/export-and-verify.md).
+Run `slide(action: "check-layout", ...)` first: it measures text overflow, overlaps, off-slide
+shapes, tiny text, and empty placeholders through PowerPoint and returns a concrete fix for each,
+with no vision model needed. Then `export(action: "export-slide-to-image"/"export-all-slides-to-images",
+...)` renders real PowerPoint output to an image for what measurement cannot judge (colors,
+balance, chart layout). Use `slide(action: "inspect", ...)` to read every shape on a slide in one
+call before editing it. See [Export & Verify](./references/export-and-verify.md).
 
 ### Rule 6: Never Ask Clarifying Questions
 
@@ -106,7 +107,7 @@ saved.
 | Format shapes and manage links | `shape(action: "set-fill"/"get-fill"/"set-line"/"get-line"/"copy-formatting"/"set-rotation"/"get-rotation"/"set-3d-rotation"/"get-3d-rotation"/"flip"/"set-z-order"/"set-shadow"/"get-shadow"/"set-glow"/"get-glow"/"set-reflection"/"get-reflection"/"set-soft-edge"/"get-soft-edge"/"set-bevel"/"get-bevel"/"group"/"ungroup"/"set-name"/"get-name"/"set-alt-text"/"get-alt-text"/"set-hyperlink"/"get-hyperlink"/"remove-hyperlink"/"get-link-info"/"update-link"/"break-link"/"set-link-auto-update")` |
 | Duplicate shapes on the same slide or copy them to another slide | `shape(action: "duplicate"/"copy-to-slide")` |
 | Set/read/find/replace text and font formatting | `textframe(action: "set-text"/"get-text"/"find-text"/"replace-text"/"set-font-size"/"set-bold"/"set-font-color"/"set-italic"/"set-underline"/"set-font-name"/"set-alignment"/"set-bullet")` |
-| Tables | `table(action: "add-table"/"set-cell-text"/"get-cell-text"/"insert-row"/"delete-row"/"insert-column"/"delete-column"/"set-cell-fill"/"get-cell-fill"/"set-cell-border"/"get-cell-border"/"merge-cells")` |
+| Tables | `table(action: "add-table"/"set-data"/"set-cell-text"/"get-cell-text"/"insert-row"/"delete-row"/"insert-column"/"delete-column"/"set-cell-fill"/"get-cell-fill"/"set-cell-border"/"get-cell-border"/"merge-cells")` |
 | Native charts | `chart(action: "add-chart"/"get-chart-data"/"add-series"/"replace-chart-data"/"set-chart-title"/"get-chart-title"/"set-axis-title"/"get-axis-title"/"set-legend-visibility"/"get-legend-visibility"/"set-style"/"get-style"/"set-color-style"/"get-color-style"/"set-data-table"/"get-data-table")` |
 | SmartArt diagrams | `smartart(action: "add-smart-art"/"add-node"/"add-child-node"/"set-node-text"/"get-node-text"/"delete-node"/"get-node-count")` |
 | Images (embedded by default; optional file links) | `image(action: "add-picture"/"set-brightness-contrast"/"get-brightness-contrast"/"set-recolor"/"get-recolor"/"set-crop"/"get-crop")` |
@@ -115,6 +116,7 @@ saved.
 | Slide layouts | `layout(action: "set-layout"/"get-layout")` |
 | Slide master theme, title/body font, background color | `master(action: "list-masters"/"get-theme-colors"/"get-theme-fonts"/"get-title-font"/"set-title-font"/"get-body-font"/"set-body-font"/"get-background-color"/"set-background-color")` |
 | Shape entrance/emphasis/exit effects, slide transitions | `animation(action: "add-effect"/"get-effect-count"/"delete-effect"/"get-transition"/"set-transition")` |
+| Read a slide / check its layout | `slide(action: "inspect"/"check-layout")` |
 | Visual verification | `export(action: "export-slide-to-image"/"export-all-slides-to-images")` |
 | Named custom shows (curated, ordered slide subsets) | `customshow(action: "list"/"create"/"delete")` |
 

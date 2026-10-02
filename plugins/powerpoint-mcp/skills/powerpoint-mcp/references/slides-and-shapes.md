@@ -13,6 +13,8 @@ reflection/soft-edge/bevel/group/name/alt-text/hyperlink formatting actions belo
 |------|--------|------------|-------|
 | `slide` | `add-blank` | `session_id` | Adds a **blank** slide at the end. No insert-at-index. |
 | `slide` | `get-count` | `session_id` | Returns current slide count (`slideCount`). Call before/after mutations to confirm state. |
+| `slide` | `inspect` | `session_id`, `slide_index` | Read-only. Returns every shape on the slide in one call (`shapes`): `shapeIndex`, `name`, `kind` (placeholder, text-box, auto-shape, picture, table, chart, ...), `placeholderType`, `left`/`top`/`width`/`height`, `rotation`, `zOrder`, `text`, `minFontSize`/`maxFontSize`, `autoSize`, rendered text bounds, and table size. Also returns `slideWidth`/`slideHeight`. |
+| `slide` | `check-layout` | `session_id`, `slide_index` (optional; omit to check every slide) | Read-only deterministic layout check. Returns `layoutIssues` (each with `code`, `severity`, `slideIndex`, `shapeIndexes`, `message`, and a concrete `suggestion`) and `layoutOk`. See `export-and-verify.md`. |
 | `slide` | `delete` | `session_id`, `slide_index` (1-based) | Removes the slide; later slides shift down by one index. |
 | `slide` | `duplicate` | `session_id`, `slide_index` | Inserts a copy of the slide immediately after the source. Returns the duplicate's new `slideIndex` and total `slideCount`. |
 | `slide` | `move-to` | `session_id`, `slide_index`, `to_position` | Moves a slide to a new 1-based position, renumbering the rest. Returns the slide's new `slideIndex`. |
@@ -213,9 +215,10 @@ For lines and connectors, `connector_type` must be one of
 ## Shape Indexing Within a Slide
 
 `shape_index` is 1-based and reflects the **order shapes were added to that slide** (and any
-built-in placeholders from the applied layout, if present). After adding several shapes, use
-`shape(action: "get-count", ...)` to confirm the current total before referencing an index you
-didn't just create yourself — don't assume index 1 is always the title.
+built-in placeholders from the applied layout, if present). Before editing a slide you did not
+just build, call `slide(action: "inspect", ...)` once: it lists every shape's index, kind, text,
+position, and size, so you can target the right `shape_index` without probing shapes one at a
+time. Don't assume index 1 is always the title.
 
 ```
 shape(action: "add-text-box", session_id: ..., slide_index: 1, ..., text: "Title")   → shapeIndex 1 (assuming a blank slide)

@@ -27,8 +27,9 @@ Run this for every slide:
 3. add content: shape(action: "add-text-box"/"add-rectangle") / table(action: "add-table") / chart(action: "add-chart") / image(action: "add-picture")
 4. textframe(action: "set-font-size"/"set-bold"/"set-font-color", ...) as needed (see text-formatting.md)
 5. notes(action: "set-notes-text", session_id: ..., slide_index: ..., text: ...) → always add speaker notes (see speaker-notes.md)
-6. export(action: "export-slide-to-image", session_id: ..., slide_index: ..., output_path: ...)  → verify (see export-and-verify.md)
-7. Fix any issues found, re-verify, then move to the next slide
+6. slide(action: "check-layout", session_id: ..., slide_index: ...) → apply each suggestion until layoutOk is true
+7. export(action: "export-slide-to-image", session_id: ..., slide_index: ..., output_path: ...)  → verify (see export-and-verify.md)
+8. Fix any issues found, re-verify, then move to the next slide
 ```
 
 `slide(action: "add-blank", ...)` always adds a **blank** slide — all content (title, body,
@@ -81,9 +82,11 @@ than guessing blind.
 
 ## After the Deck Is Built
 
-1. `export(action: "export-all-slides-to-images", session_id: ..., output_directory: ...)` — one
+1. `slide(action: "check-layout", session_id: ...)` — one call checks every slide for overflow,
+   overlap, off-slide, tiny-text, and empty-placeholder problems; fix them first.
+2. `export(action: "export-all-slides-to-images", session_id: ..., output_directory: ...)` — one
    call renders every slide.
-2. Review each exported image; fix any slide with overlapping shapes, empty placeholders, or text
+3. Review each exported image; fix any slide with overlapping shapes, empty placeholders, or text
    overflow (reduce `text` length or increase shape height / reduce font size).
-3. `presentation(action: "close", sessionId: sessionId, save: true)`.
-4. Summarize: slide count, layouts used, and the output path.
+4. `presentation(action: "close", sessionId: sessionId, save: true)`.
+5. Summarize: slide count, layouts used, and the output path.

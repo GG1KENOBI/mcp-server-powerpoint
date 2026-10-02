@@ -79,4 +79,19 @@ public sealed class SlideOperationResult
 
     /// <summary>Slide tags in native 1-based collection order.</summary>
     public IReadOnlyList<TagInfo>? Tags { get; init; }
+
+    /// <summary>Slide width in points, for inspect and check-layout.</summary>
+    public float? SlideWidth { get; init; }
+
+    /// <summary>Slide height in points, for inspect and check-layout.</summary>
+    public float? SlideHeight { get; init; }
+
+    /// <summary>Every top-level shape on the slide, in 1-based shape order, for inspect.</summary>
+    public IReadOnlyList<SlideShapeInfo>? Shapes { get; init; }
+
+    /// <summary>Layout issues found by check-layout, most severe first.</summary>
+    public IReadOnlyList<SlideLayoutIssue>? LayoutIssues { get; init; }
+
+    /// <summary>True when check-layout found no error or warning (info items may remain).</summary>
+    public bool? LayoutOk { get; init; }
 }

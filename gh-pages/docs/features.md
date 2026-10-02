@@ -1,12 +1,12 @@
 ---
 title: Complete Feature Reference
-description: 17 MCP tools with 205 operations across 17 domains for live PowerPoint automation through single action-dispatch tools.
+description: 17 MCP tools with 208 operations across 17 domains for live PowerPoint automation through single action-dispatch tools.
 keywords: "PowerPoint MCP features, PowerPoint automation, presentation tool, slide tool, shape tool, media tool, chart tool, SmartArt tool, export-to-verify"
 ---
 
 # Complete Feature Reference
 
-PowerPoint MCP Server exposes **17 MCP tools with 205 operations across 17 domains**.
+PowerPoint MCP Server exposes **17 MCP tools with 208 operations across 17 domains**.
 Every domain is a **single action-dispatch tool** that takes an `action` parameter — for example
 `presentation(action="open", filePath="C:\\Decks\\q4.pptx")` or
 `chart(action="add-chart", session_id="...", slide_index=2, ...)`.
@@ -21,10 +21,10 @@ The CLI mirrors the same domain model:
 | Tool | Ops | What it covers | MCP call shape | CLI shape |
 |------|-----|----------------|----------------|-----------|
 | `presentation` | 20 | Session lifecycle, Save As/copy, templates, advisory Mark as Final, document properties, string tags | `presentation(action="...", ...)` | `pptcli session <action> ...` |
-| `slide` | 25 | Slide lifecycle, visibility, backgrounds, sections, comments, import, string tags | `slide(action="...", session_id=..., ...)` | `pptcli slide <action> -s <SESSION_ID> ...` |
+| `slide` | 27 | Slide lifecycle, visibility, backgrounds, sections, comments, import, string tags | `slide(action="...", session_id=..., ...)` | `pptcli slide <action> -s <SESSION_ID> ...` |
 | `shape` | 57 | Shapes, free-floating and attached connectors, WordArt, 3D rotation, alignment/distribution, styling, grouping, boolean merging, hyperlinks, linked pictures, placeholders, duplication and cross-slide copying, string tags | `shape(action="...", session_id=..., ...)` | `pptcli shape <action> -s <SESSION_ID> ...` |
 | `textframe` | 22 | Text content, find/replace, and text formatting | `textframe(action="...", session_id=..., ...)` | `pptcli textframe <action> -s <SESSION_ID> ...` |
-| `table` | 12 | Table creation and cell editing/formatting | `table(action="...", session_id=..., ...)` | `pptcli table <action> -s <SESSION_ID> ...` |
+| `table` | 13 | Table creation and cell editing/formatting | `table(action="...", session_id=..., ...)` | `pptcli table <action> -s <SESSION_ID> ...` |
 | `notes` | 2 | Speaker notes | `notes(action="...", session_id=..., ...)` | `pptcli notes <action> -s <SESSION_ID> ...` |
 | `layout` | 4 | Slide layouts | `layout(action="...", session_id=..., ...)` | `pptcli layout <action> -s <SESSION_ID> ...` |
 | `pagesetup` | 5 | Slide size, numbering, footer, date/time | `pagesetup(action="...", session_id=..., ...)` | `pptcli pagesetup <action> -s <SESSION_ID> ...` |
@@ -74,7 +74,7 @@ remaining edit/read actions use that `sessionId`.
 `get-document-property`, `set-custom-property`, `get-custom-property`, `remove-custom-property`,
 `set-tag`, `get-tag`, `list-tags`, `delete-tag`
 
-### `slide` tool (25 operations)
+### `slide` tool (27 operations)
 
 | Action | What it does |
 |--------|---------------|
@@ -135,7 +135,7 @@ explicit empty string and preserves character formatting outside the matched ran
 `get-underline`, `set-font-name`, `get-font-name`, `set-alignment`, `get-alignment`, `set-bullet`,
 `get-bullet`, `set-auto-size`, `get-auto-size`
 
-### `table` tool (12 operations)
+### `table` tool (13 operations)
 
 Use `table` for native PowerPoint tables.
 

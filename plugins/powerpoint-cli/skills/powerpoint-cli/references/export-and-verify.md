@@ -3,11 +3,12 @@
 # Export & Visual Verification
 
 Reference for PowerPoint's native PDF delivery and image rendering actions. The image actions
-provide the multimodal "look at the result" verification loop. This is the tool surface's
-differentiator: text-only
-inspection (`textframe(action: "get-text", ...)`, `shape(action: "get-count", ...)`,
-`chart(action: "get-chart-data", ...)`) cannot catch overlapping shapes, text overflow, bad chart
-proportions, or wrong colors — only a rendered image can.
+provide the multimodal "look at the result" verification loop. Single-property reads
+(`textframe(action: "get-text", ...)`, `shape(action: "get-count", ...)`,
+`chart(action: "get-chart-data", ...)`) cannot catch layout problems. `slide(action:
+"check-layout", ...)` catches the measurable ones (overflow, overlap, off-slide, tiny text, empty
+placeholders) without a vision model; a rendered image catches the rest (colors, balance, chart
+proportions).
 
 ## REQUIRED: Verify After Visual Changes
 
@@ -17,14 +18,42 @@ session without this step when the task involves visual output.
 
 ```
 1. chart(action: "add-chart", ...) / table(action: "add-table", ...) / image(action: "add-picture", ...) / shape(action: "set-position", ...)
-2. export(action: "export-slide-to-image", session_id: ..., slide_index: ..., output_path: ...)  ← REQUIRED — never skip
-3. Inspect the returned image for overlap, overflow, or wrong placement
-4. If issues found → fix → export again → repeat until it looks right
-5. presentation(action: "close", sessionId: ..., save: true)
+2. slide(action: "check-layout", session_id: ..., slide_index: ...)                            ← fix every error/warning first
+3. export(action: "export-slide-to-image", session_id: ..., slide_index: ..., output_path: ...)  ← REQUIRED — never skip
+4. Inspect the returned image for anything check-layout cannot judge (balance, colors, charts)
+5. If issues found → fix → check-layout / export again → repeat until it looks right
+6. presentation(action: "close", sessionId: ..., save: true)
 ```
 
 This rule applies even if the operation reported `success: true` — a successful COM call only
 confirms the API accepted the parameters, not that the result looks correct.
+
+## Deterministic Layout Check (No Vision Model Needed)
+
+`slide(action: "check-layout", session_id: ..., slide_index: ...)` measures the slide through
+PowerPoint itself and reports problems with the exact shapes and numbers involved. Omit
+`slide_index` to check every slide at once. It is read-only and cheap; run it after every batch of
+edits, before exporting images.
+
+| `code` | `severity` | Meaning | Typical fix (also given in `suggestion`) |
+|--------|------------|---------|------------------------------------------|
+| `text-overflow` | error | The rendered text is taller or wider than its shape | `shape(action: "set-size", ...)` to the suggested size, shorten the text, or lower the font size |
+| `off-slide` | error / warning | The shape is entirely (error) or partly (warning) outside the slide | `shape(action: "set-position", ...)` to the suggested `left`/`top`, or `set-size` |
+| `text-overlap` | error | Two shapes with text (or tables) overlap | Move the lower shape to the suggested `top`, or place them side by side |
+| `partial-overlap` | warning | Shapes overlap without one containing the other | Separate them, or put one fully inside the other if layering is intended |
+| `small-text` | warning | Text below 10 pt | `textframe(action: "set-font-size", ...)` to 12 pt or more, or move detail to speaker notes |
+| `empty-placeholder` | warning | A content placeholder has no text, picture, table, or chart | `shape(action: "set-placeholder-text", ...)` or `shape(action: "delete", ...)` |
+| `near-misaligned` | info | Left or top edges differ by a few points | `shape(action: "set-position", ...)` or `shape(action: "align", ...)` |
+
+`layoutOk` is `true` when no error or warning remains (info items are optional polish). One shape
+fully inside another (text on a card, a caption on a photo) and full-slide background shapes are
+treated as intentional and not reported.
+
+Use `slide(action: "inspect", ...)` when you need the full picture: every shape's index, kind,
+text, font sizes, position, size, and rendered text bounds in one call.
+
+check-layout does not judge colors, contrast, visual balance, chart internals, or whether the
+content makes sense — that is what the exported image is for.
 
 ## Actions
 
@@ -67,9 +96,10 @@ fix cycle wastes calls once you've localized the issue to one slide.
 ```
 For each slide with visual content {
   1. Build/modify the slide
-  2. export(action: "export-slide-to-image", ...) → inspect
-  3. If ANY issue found → fix it → export again
-  4. Move to the next slide only when it looks right
+  2. slide(action: "check-layout", ...) → apply each suggestion → repeat until layoutOk is true
+  3. export(action: "export-slide-to-image", ...) → inspect
+  4. If ANY issue found → fix it → check-layout and export again
+  5. Move to the next slide only when it looks right
 }
 ```
 
@@ -78,6 +108,7 @@ normal, not a sign something went wrong the first time.
 
 ## After the Full Deck
 
-Before the final `presentation(action: "close", sessionId: ..., save: true)`, run `export(action:
-"export-all-slides-to-images", ...)` once as a final pass over the whole deck, confirming no slide
-was missed and the deck reads coherently start to finish.
+Before the final `presentation(action: "close", sessionId: ..., save: true)`, run
+`slide(action: "check-layout", session_id: ...)` without `slide_index` to check every slide, then
+`export(action: "export-all-slides-to-images", ...)` once as a final pass over the whole deck,
+confirming no slide was missed and the deck reads coherently start to finish.

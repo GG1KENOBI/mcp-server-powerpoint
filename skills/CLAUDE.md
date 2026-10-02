@@ -34,9 +34,9 @@ exists (see `.github/copilot-instructions.md`).
 3. **Explicit save-on-close** — persist changes with `presentation(action: "close", sessionId: ..., save: true)`.
 4. **Close is async** — `presentation(action: "close", sessionId: ...)` does not wait for the
    PowerPoint process to exit.
-5. **Verify visually** — use `export(action: "export-slide-to-image"/"export-all-slides-to-images",
-   ...)` after any visual change; this is the project's core differentiator over text-only
-   PowerPoint tooling.
+5. **Verify** — run `slide(action: "check-layout", ...)` and fix what it reports, then use
+   `export(action: "export-slide-to-image"/"export-all-slides-to-images", ...)` after any visual
+   change; this is the project's core differentiator over text-only PowerPoint tooling.
 6. **Run the accessibility audit** — call `accessibility(action: "audit", ...)` before final
    delivery and fix deterministic structure issues.
 7. **Never ask clarifying questions** — discover state with `presentation(action: "list")`,

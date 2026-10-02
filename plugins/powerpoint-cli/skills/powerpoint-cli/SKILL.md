@@ -391,13 +391,13 @@ Actions: `add-rectangle`, `add-text-box`, `add-text-effect`, `add-auto-shape`, `
 | `--tag-value` | (required for: set-tag) |
 
 
-### `slide` — Slide lifecycle, visibility, background, section, legacy comment, and slide-import commands.
+### `slide` — Slide lifecycle, visibility, background, section, legacy comment, slide-import, inspection, and layout-check commands.
 
-Actions: `add-blank`, `get-count`, `delete`, `duplicate`, `move-to`, `set-background-color`, `get-background-color`, `set-gradient-background`, `get-gradient-background`, `add-section`, `rename-section`, `delete-section`, `get-section-count`, `get-section-name`, `list-comments`, `add-comment`, `delete-comment`, `clear-comments`, `set-hidden`, `set-display-master-shapes`, `import-from-file`, `set-tag`, `get-tag`, `list-tags`, `delete-tag`
+Actions: `add-blank`, `get-count`, `delete`, `duplicate`, `move-to`, `set-background-color`, `get-background-color`, `set-gradient-background`, `get-gradient-background`, `add-section`, `rename-section`, `delete-section`, `get-section-count`, `get-section-name`, `list-comments`, `add-comment`, `delete-comment`, `clear-comments`, `set-hidden`, `set-display-master-shapes`, `import-from-file`, `set-tag`, `get-tag`, `list-tags`, `delete-tag`, `inspect`, `check-layout`
 
 | Flag | Description |
 |------|-------------|
-| `--slide-index` | (required for: delete, duplicate, move-to, set-background-color, get-background-color, set-gradient-background, get-gradient-background, list-comments, add-comment, delete-comment, clear-comments, set-hidden, set-display-master-shapes, set-tag, get-tag, list-tags, delete-tag) |
+| `--slide-index` | (required for: delete, duplicate, move-to, set-background-color, get-background-color, set-gradient-background, get-gradient-background, list-comments, add-comment, delete-comment, clear-comments, set-hidden, set-display-master-shapes, set-tag, get-tag, list-tags, delete-tag, inspect) |
 | `--to-position` | (required for: move-to) |
 | `--red` | (required for: set-background-color) |
 | `--green` | (required for: set-background-color) |
@@ -447,9 +447,9 @@ Actions: `add-smart-art`, `add-node`, `add-child-node`, `set-node-text`, `get-no
 | `--node-index` | (required for: set-node-text, get-node-text, delete-node) |
 
 
-### `table` — Table commands: add a table shape, read/write cell text, insert/delete rows and columns, format cell fill and borders, and merge cells. Operates within an already-open IPresentationBatch, targeting a specific slide and table shape by their 1-based indices.
+### `table` — Table commands: add a table shape, read/write cell text, fill a whole table in one call, insert/delete rows and columns, format cell fill and borders, and merge cells. Operates within an already-open IPresentationBatch, targeting a specific slide and table shape by their 1-based indices.
 
-Actions: `add-table`, `set-cell-text`, `get-cell-text`, `insert-row`, `delete-row`, `insert-column`, `delete-column`, `set-cell-fill`, `get-cell-fill`, `set-cell-border`, `get-cell-border`, `merge-cells`
+Actions: `add-table`, `set-cell-text`, `get-cell-text`, `set-data`, `insert-row`, `delete-row`, `insert-column`, `delete-column`, `set-cell-fill`, `get-cell-fill`, `set-cell-border`, `get-cell-border`, `merge-cells`
 
 | Flag | Description |
 |------|-------------|
@@ -460,10 +460,14 @@ Actions: `add-table`, `set-cell-text`, `get-cell-text`, `insert-row`, `delete-ro
 | `--top` | (required for: add-table) |
 | `--width` | (required for: add-table) |
 | `--height` | (required for: add-table) |
-| `--shape-index` | (required for: set-cell-text, get-cell-text, insert-row, delete-row, insert-column, delete-column, set-cell-fill, get-cell-fill, set-cell-border, get-cell-border, merge-cells) |
+| `--shape-index` | (required for: set-cell-text, get-cell-text, set-data, insert-row, delete-row, insert-column, delete-column, set-cell-fill, get-cell-fill, set-cell-border, get-cell-border, merge-cells) |
 | `--row` | (required for: set-cell-text, get-cell-text, delete-row, set-cell-fill, get-cell-fill, set-cell-border, get-cell-border, merge-cells) |
 | `--column` | (required for: set-cell-text, get-cell-text, delete-column, set-cell-fill, get-cell-fill, set-cell-border, get-cell-border, merge-cells) |
 | `--text` | (required for: set-cell-text) |
+| `--data` | One entry per table row with its cells separated by the separator (a vertical bar by default). Pasted markdown table rows, including the header divider row, are accepted; put a backslash before the separator to use it literally inside a cell. (required for: set-data) |
+| `--separator` | Cell separator. Defaults to the vertical bar character. |
+| `--start-row` | 1-based table row that receives the first data row. Defaults to 1. |
+| `--start-column` | 1-based table column that receives the first cell of each row. Defaults to 1. |
 | `--before-row` |  |
 | `--before-column` |  |
 | `--red` | (required for: set-cell-fill) |

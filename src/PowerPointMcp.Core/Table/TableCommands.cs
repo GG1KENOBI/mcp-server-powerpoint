@@ -90,6 +90,88 @@ public sealed class TableCommands : ITableCommands
     }
 
     /// <inheritdoc/>
+    public TableOperationResult SetData(
+        IPresentationBatch batch,
+        int slideIndex,
+        int shapeIndex,
+        IReadOnlyList<string> data,
+        string separator = "|",
+        int startRow = 1,
+        int startColumn = 1)
+    {
+        ArgumentNullException.ThrowIfNull(batch);
+        ArgumentNullException.ThrowIfNull(data);
+        if (string.IsNullOrEmpty(separator))
+        {
+            return new TableOperationResult { Success = false, ErrorMessage = "separator must not be empty." };
+        }
+
+        var rows = TableDataParser.Parse(data, separator);
+        if (rows.Count == 0)
+        {
+            return new TableOperationResult
+            {
+                Success = false,
+                ErrorMessage = $"data must contain at least one row of cells separated by '{separator}', e.g. \"Region{separator}Q1{separator}Q2\"."
+            };
+        }
+
+        return batch.Execute((ctx, ct) =>
+        {
+            var validation = ValidateTableShape(ctx, slideIndex, shapeIndex, startRow, startColumn, out PowerPoint.Table? table);
+            if (validation is not null) return validation;
+
+            int rowCount = table!.Rows.Count;
+            int columnCount = table.Columns.Count;
+            int rowRoom = rowCount - startRow + 1;
+            int columnRoom = columnCount - startColumn + 1;
+            int widest = rows.Max(row => row.Count);
+            if (rows.Count > rowRoom)
+            {
+                return new TableOperationResult
+                {
+                    Success = false,
+                    ErrorMessage = $"data has {rows.Count} row(s) but the table has room for {rowRoom} starting at row {startRow} ({rowCount} row(s) in total). Nothing was written. Add rows with table insert-row, or create the table with at least {startRow - 1 + rows.Count} rows.",
+                    RowCount = rowCount,
+                    ColumnCount = columnCount
+                };
+            }
+            if (widest > columnRoom)
+            {
+                return new TableOperationResult
+                {
+                    Success = false,
+                    ErrorMessage = $"A data row has {widest} cell(s) but the table has room for {columnRoom} starting at column {startColumn} ({columnCount} column(s) in total). Nothing was written. Add columns with table insert-column, or create the table with at least {startColumn - 1 + widest} columns.",
+                    RowCount = rowCount,
+                    ColumnCount = columnCount
+                };
+            }
+
+            int written = 0;
+            for (int rowOffset = 0; rowOffset < rows.Count; rowOffset++)
+            {
+                var cells = rows[rowOffset];
+                for (int columnOffset = 0; columnOffset < cells.Count; columnOffset++)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    // Same cell write as SetCellText.
+                    table.Cell(startRow + rowOffset, startColumn + columnOffset).Shape.TextFrame.TextRange.Text = cells[columnOffset];
+                    written++;
+                }
+            }
+
+            return new TableOperationResult
+            {
+                Success = true,
+                ShapeIndex = shapeIndex,
+                RowCount = rowCount,
+                ColumnCount = columnCount,
+                CellsWritten = written
+            };
+        });
+    }
+
+    /// <inheritdoc/>
     public TableOperationResult GetCellText(IPresentationBatch batch, int slideIndex, int shapeIndex, int row, int column)
     {
         ArgumentNullException.ThrowIfNull(batch);

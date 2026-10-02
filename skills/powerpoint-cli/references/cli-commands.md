@@ -1172,8 +1172,8 @@ OPTIONS:
 
 ```text
 DESCRIPTION:
-Slide lifecycle, visibility, background, section, legacy comment, and
-slide-import commands
+Slide lifecycle, visibility, background, section, legacy comment, slide-import,
+inspection, and layout-check commands
 
 USAGE:
     pptcli slide <ACTION> [OPTIONS]
@@ -1206,7 +1206,8 @@ OPTIONS:
                                                              set-display-master-
                                                              shapes, set-tag,
                                                              get-tag, list-tags,
-                                                             delete-tag) (valid
+                                                             delete-tag,
+                                                             inspect) (valid
                                                              for: delete,
                                                              duplicate, move-to,
                                                              set-background-colo
@@ -1225,7 +1226,9 @@ OPTIONS:
                                                              set-display-master-
                                                              shapes, set-tag,
                                                              get-tag, list-tags,
-                                                             delete-tag)
+                                                             delete-tag,
+                                                             inspect,
+                                                             check-layout)
         --to-position <TOPOSITION>                           (required for:
                                                              move-to) (valid
                                                              for: move-to)
@@ -1407,10 +1410,10 @@ OPTIONS:
 
 ```text
 DESCRIPTION:
-Table commands: add a table shape, read/write cell text, insert/delete rows and
-columns, format cell fill and borders, and merge cells. Operates within an
-already-open IPresentationBatch, targeting a specific slide and table shape by
-their 1-based indices
+Table commands: add a table shape, read/write cell text, fill a whole table in
+one call, insert/delete rows and columns, format cell fill and borders, and
+merge cells. Operates within an already-open IPresentationBatch, targeting a
+specific slide and table shape by their 1-based indices
 
 USAGE:
     pptcli table <ACTION> [OPTIONS]
@@ -1436,17 +1439,18 @@ OPTIONS:
         --height <HEIGHT>                    (required for: add-table) (valid
                                              for: add-table)
         --shape-index <SHAPEINDEX>           (required for: set-cell-text,
-                                             get-cell-text, insert-row,
-                                             delete-row, insert-column,
-                                             delete-column, set-cell-fill,
-                                             get-cell-fill, set-cell-border,
-                                             get-cell-border, merge-cells)
-                                             (valid for: set-cell-text,
-                                             get-cell-text, insert-row,
-                                             delete-row, insert-column,
-                                             delete-column, set-cell-fill,
-                                             get-cell-fill, set-cell-border,
-                                             get-cell-border, merge-cells)
+                                             get-cell-text, set-data,
+                                             insert-row, delete-row,
+                                             insert-column, delete-column,
+                                             set-cell-fill, get-cell-fill,
+                                             set-cell-border, get-cell-border,
+                                             merge-cells) (valid for:
+                                             set-cell-text, get-cell-text,
+                                             set-data, insert-row, delete-row,
+                                             insert-column, delete-column,
+                                             set-cell-fill, get-cell-fill,
+                                             set-cell-border, get-cell-border,
+                                             merge-cells)
         --row <ROW>                          (required for: set-cell-text,
                                              get-cell-text, delete-row,
                                              set-cell-fill, get-cell-fill,
@@ -1467,6 +1471,26 @@ OPTIONS:
                                              get-cell-border, merge-cells)
         --text <TEXT>                        (required for: set-cell-text)
                                              (valid for: set-cell-text)
+        --data <DATA>                        One entry per table row with its
+                                             cells separated by the separator (a
+                                             vertical bar by default). Pasted
+                                             markdown table rows, including the
+                                             header divider row, are accepted;
+                                             put a backslash before the
+                                             separator to use it literally
+                                             inside a cell. (required for:
+                                             set-data) (valid for: set-data)
+                                             (JSON format)
+        --separator <SEPARATOR>              Cell separator. Defaults to the
+                                             vertical bar character. (valid for:
+                                             set-data)
+        --start-row <STARTROW>               1-based table row that receives the
+                                             first data row. Defaults to 1.
+                                             (valid for: set-data)
+        --start-column <STARTCOLUMN>         1-based table column that receives
+                                             the first cell of each row.
+                                             Defaults to 1. (valid for:
+                                             set-data)
         --before-row <BEFOREROW>             (valid for: insert-row)
         --before-column <BEFORECOLUMN>       (valid for: insert-column)
         --red <RED>                          (required for: set-cell-fill)

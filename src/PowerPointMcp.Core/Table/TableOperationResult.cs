@@ -40,4 +40,7 @@ public sealed class TableOperationResult
 
     /// <summary>Whether the border is visible, if applicable.</summary>
     public bool? Visible { get; init; }
+
+    /// <summary>Number of cells written by set-data.</summary>
+    public int? CellsWritten { get; init; }
 }

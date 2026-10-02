@@ -4,13 +4,14 @@ using Sbroenne.PowerPointMcp.Core.Attributes;
 namespace Sbroenne.PowerPointMcp.Core.Table;
 
 /// <summary>
-/// Table commands: add a table shape, read/write cell text, insert/delete rows and columns,
-/// format cell fill and borders, and merge cells. Operates within an already-open
-/// IPresentationBatch, targeting a specific slide and table shape by their 1-based indices.
+/// Table commands: add a table shape, read/write cell text, fill a whole table in one call,
+/// insert/delete rows and columns, format cell fill and borders, and merge cells. Operates within
+/// an already-open IPresentationBatch, targeting a specific slide and table shape by their 1-based
+/// indices.
 /// </summary>
 [ServiceCategory("table", "Table")]
 [McpTool("table", Title = "Table Operations", Destructive = true, Category = "content",
-    Description = "Add a table shape, read/write cell text, edit rows/columns, and format cells in an open presentation session.")]
+    Description = "Add a table shape, read/write cell text, fill a whole table from rows in one call (set-data), edit rows/columns, and format cells in an open presentation session.")]
 public interface ITableCommands
 {
     /// <summary>Adds a new table shape with the given number of rows/columns to a slide.</summary>
@@ -21,6 +22,25 @@ public interface ITableCommands
 
     /// <summary>Gets the text of a table cell (1-based row/column).</summary>
     TableOperationResult GetCellText(IPresentationBatch batch, int slideIndex, int shapeIndex, int row, int column);
+
+    /// <summary>
+    /// Fills table cells from rows of separated cells in one call, e.g. <c>["Region|Q1|Q2",
+    /// "North|12|15"]</c>; pasted markdown rows (<c>| a | b |</c>, <c>|---|---|</c>) also work.
+    /// Writing starts at <paramref name="startRow"/>/<paramref name="startColumn"/>. Everything is
+    /// validated before any cell is written; a table too small for the data is rejected unchanged.
+    /// </summary>
+    /// <param name="data">One entry per table row with its cells separated by the separator (a vertical bar by default). Pasted markdown table rows, including the header divider row, are accepted; put a backslash before the separator to use it literally inside a cell.</param>
+    /// <param name="separator">Cell separator. Defaults to the vertical bar character.</param>
+    /// <param name="startRow">1-based table row that receives the first data row. Defaults to 1.</param>
+    /// <param name="startColumn">1-based table column that receives the first cell of each row. Defaults to 1.</param>
+    TableOperationResult SetData(
+        IPresentationBatch batch,
+        int slideIndex,
+        int shapeIndex,
+        IReadOnlyList<string> data,
+        string separator = "|",
+        int startRow = 1,
+        int startColumn = 1);
 
     /// <summary>
     /// Inserts a new row into the table. If <paramref name="beforeRow"/> is omitted, the row is

@@ -4,11 +4,12 @@ using Sbroenne.PowerPointMcp.Core.Attributes;
 namespace Sbroenne.PowerPointMcp.Core.Slide;
 
 /// <summary>
-/// Slide lifecycle, visibility, background, section, legacy comment, and slide-import commands.
+/// Slide lifecycle, visibility, background, section, legacy comment, slide-import, inspection, and
+/// layout-check commands.
 /// </summary>
 [ServiceCategory("slide", "Slide")]
 [McpTool("slide", Title = "Slide Operations", Destructive = true, Category = "content",
-    Description = "Manage slides, visibility, backgrounds, sections, legacy comments, and slide import in an open presentation session.")]
+    Description = "Manage slides, visibility, backgrounds, sections, legacy comments, and slide import in an open presentation session. Use inspect to read every shape on a slide in one call and check-layout to find overflowing, overlapping, off-slide, or too-small content with concrete fixes.")]
 public interface ISlideCommands
 {
     /// <summary>
@@ -151,4 +152,19 @@ public interface ISlideCommands
 
     /// <summary>Deletes a slide string tag by its case-insensitive name.</summary>
     SlideOperationResult DeleteTag(IPresentationBatch batch, int slideIndex, string tagName);
+
+    /// <summary>
+    /// Reads every top-level shape on a slide in one call: 1-based shape index, name, kind,
+    /// placeholder type, position and size in points, rotation, z-order, text, font-size range,
+    /// autofit mode, rendered text bounds, and table size. Read-only.
+    /// </summary>
+    SlideOperationResult Inspect(IPresentationBatch batch, int slideIndex);
+
+    /// <summary>
+    /// Runs deterministic layout checks on one slide, or on every slide when
+    /// <paramref name="slideIndex"/> is omitted: text overflow, shapes off the slide, overlapping
+    /// text, partial overlaps, text below 10 pt, empty placeholders, and near-misaligned edges.
+    /// Each issue names the shapes involved and a concrete fix. Read-only.
+    /// </summary>
+    SlideOperationResult CheckLayout(IPresentationBatch batch, int? slideIndex = null);
 }

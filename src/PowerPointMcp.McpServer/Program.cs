@@ -176,6 +176,13 @@ public class Program
                        presentation(action=save-copy-as) with sessionId and targetPath, or
                        presentation(action=close, sessionId, save=true) to save and close.
 
+                    VERIFY
+                    - slide(action=inspect, session_id, slide_index) lists every shape with its shape_index, kind,
+                      position, size and text; use it before editing an existing slide.
+                    - After building or editing slides, run slide(action=check-layout, session_id) and apply each
+                      issue's suggestion until layoutOk is true, then export a slide image for a final visual check.
+                    - Fill a table in one call with table(action=set-data, ..., data=["Name|Q1", "North|12"]).
+
                     If a call is rejected, the error names the missing parameters or the closest valid action;
                     fix the call and retry.
                     """;
