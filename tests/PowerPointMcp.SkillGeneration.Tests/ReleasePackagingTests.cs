@@ -120,6 +120,47 @@ public sealed class ReleasePackagingTests
         Assert.Contains("sha256sum *.zip", workflow, StringComparison.Ordinal);
         Assert.Contains("artifacts/standalone-checksums/SHA256SUMS", workflow, StringComparison.Ordinal);
 
+        Assert.Contains("resume_release:", workflow, StringComparison.Ordinal);
+        Assert.Contains(
+            "./scripts/Assert-ReleaseTagState.ps1",
+            workflow,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "source_ref=$TAG",
+            workflow,
+            StringComparison.Ordinal);
+        Assert.Equal(
+            10,
+            System.Text.RegularExpressions.Regex.Count(
+                workflow,
+                System.Text.RegularExpressions.Regex.Escape(
+                    "ref: ${{ needs.version.outputs.source_ref }}")));
+        Assert.Contains(
+            "needs: [version, build-cli, build-mcp-server]",
+            workflow,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "./scripts/Publish-NpmPackage.ps1",
+            workflow,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "gh release upload \"$TAG\" $ARTIFACTS --clobber",
+            workflow,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("gh release edit", workflow, StringComparison.Ordinal);
+        Assert.Contains(
+            "Release documentation PR #$EXISTING_PR is already merged.",
+            workflow,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "gh pr merge \"$EXISTING_PR\" --squash --delete-branch --auto",
+            workflow,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "ref: ${{ needs.version.outputs.source_ref }}",
+            workflow,
+            StringComparison.Ordinal);
+
         var registryStepStart = workflow.IndexOf("- name: Publish to MCP Registry", StringComparison.Ordinal);
         Assert.True(registryStepStart >= 0);
         var nextJobStart = workflow.IndexOf(
@@ -131,6 +172,108 @@ public sealed class ReleasePackagingTests
             "continue-on-error",
             workflow[registryStepStart..nextJobStart],
             StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ReleaseTagState_RequiresResumeExactlyWhenTagExists()
+    {
+        using var temp = new TemporaryDirectory();
+        Assert.Equal(0, RunProcessRaw("git", "-C", temp.Path, "init").ExitCode);
+        Assert.Equal(0, RunProcessRaw("git", "-C", temp.Path, "config", "user.name", "Release Test").ExitCode);
+        Assert.Equal(0, RunProcessRaw("git", "-C", temp.Path, "config", "user.email", "release@example.invalid").ExitCode);
+        Assert.Equal(0, RunProcessRaw("git", "-C", temp.Path, "commit", "--allow-empty", "-m", "initial").ExitCode);
+        Assert.Equal(0, RunProcessRaw("git", "-C", temp.Path, "tag", "v1.2.3").ExitCode);
+
+        var script = Path.Combine(RepoRoot, "scripts", "Assert-ReleaseTagState.ps1");
+        Assert.Equal(
+            0,
+            RunPowerShellRaw(
+                script,
+                "-Version", "1.2.3",
+                "-RepositoryRoot", temp.Path,
+                "-ResumeRelease").ExitCode);
+        Assert.NotEqual(
+            0,
+            RunPowerShellRaw(
+                script,
+                "-Version", "1.2.3",
+                "-RepositoryRoot", temp.Path).ExitCode);
+        Assert.NotEqual(
+            0,
+            RunPowerShellRaw(
+                script,
+                "-Version", "2.0.0",
+                "-RepositoryRoot", temp.Path,
+                "-ResumeRelease").ExitCode);
+        Assert.Equal(
+            0,
+            RunPowerShellRaw(
+                script,
+                "-Version", "2.0.0",
+                "-RepositoryRoot", temp.Path).ExitCode);
+    }
+
+    [Fact]
+    public void PublishNpmPackage_SkipsExistingVersionAndPublishesMissingVersion()
+    {
+        using var temp = new TemporaryDirectory();
+        var publishScript = Path.Combine(RepoRoot, "scripts", "Publish-NpmPackage.ps1");
+        var logPath = Path.Combine(temp.Path, "npm.log");
+        var fakeNpm = Path.Combine(temp.Path, "fake-npm.ps1");
+        File.WriteAllText(
+            fakeNpm,
+            """
+            param([Parameter(ValueFromRemainingArguments = $true)][string[]] $Arguments)
+            if ($Arguments[0] -eq 'view') {
+                if ($Arguments[1] -match 'existing') {
+                    Write-Output '1.2.3'
+                    exit 0
+                }
+                exit 1
+            }
+            if ($Arguments[0] -eq 'publish') {
+                if ($Arguments[1] -match 'fail') {
+                    exit 3
+                }
+                Add-Content -Path $env:FAKE_NPM_LOG -Value ($Arguments -join ' ')
+                exit 0
+            }
+            exit 2
+            """);
+
+        var previousLog = Environment.GetEnvironmentVariable("FAKE_NPM_LOG");
+        Environment.SetEnvironmentVariable("FAKE_NPM_LOG", logPath);
+        try
+        {
+            RunPowerShell(
+                publishScript,
+                "-PackageName", "@sbroenne/existing",
+                "-Version", "1.2.3",
+                "-PackageTarball", Path.Combine(temp.Path, "existing.tgz"),
+                "-NpmCommand", fakeNpm);
+            Assert.False(File.Exists(logPath));
+
+            RunPowerShell(
+                publishScript,
+                "-PackageName", "@sbroenne/missing",
+                "-Version", "1.2.3",
+                "-PackageTarball", Path.Combine(temp.Path, "missing.tgz"),
+                "-NpmCommand", fakeNpm);
+            Assert.Contains("publish", File.ReadAllText(logPath), StringComparison.Ordinal);
+
+            Assert.NotEqual(
+                0,
+                RunPowerShellRaw(
+                    publishScript,
+                    "-PackageName", "@sbroenne/fail",
+                    "-Version", "1.2.3",
+                    "-PackageTarball", Path.Combine(temp.Path, "fail.tgz"),
+                    "-NpmCommand", fakeNpm).ExitCode);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("FAKE_NPM_LOG", previousLog);
+        }
     }
 
     [Fact]
