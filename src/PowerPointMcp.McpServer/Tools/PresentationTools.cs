@@ -146,6 +146,18 @@ public static class PresentationTools
         }
     }
 
+    /// <summary>Allowed parameters for a canonical action string (empty for an unknown action).</summary>
+    internal static HashSet<string> GetAllowedParameterNames(string action)
+    {
+        var parsedAction = Enum.GetValues<PresentationToolAction>()
+            .Where(value => string.Equals(value.ToActionString(), action, StringComparison.Ordinal))
+            .Select(value => (PresentationToolAction?)value)
+            .FirstOrDefault();
+        return parsedAction is { } known
+            ? GetAllowedParameterNames(known)
+            : new HashSet<string>(StringComparer.Ordinal);
+    }
+
     private static HashSet<string> GetAllowedParameterNames(PresentationToolAction action)
     {
         string[] allowedParameters = action switch

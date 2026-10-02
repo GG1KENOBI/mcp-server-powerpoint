@@ -18,38 +18,45 @@ internal static class ToolArgumentFilter
 
             try
             {
-                var arguments = request.Params?.Arguments
-                    ?? throw new ArgumentException("The action argument is required.");
                 var properties = tool.ProtocolTool.InputSchema.GetProperty("properties");
-                if (!arguments.TryGetValue("action", out var action) || action.ValueKind != JsonValueKind.String)
-                    throw new ArgumentException("The action argument must be a string naming an available action.");
-
-                var canonicalAction = properties.GetProperty("action").GetProperty("enum").EnumerateArray()
-                    .Select(value => value.GetString()!)
-                    .FirstOrDefault(value =>
-                        string.Equals(value, action.GetString(), StringComparison.OrdinalIgnoreCase))
-                    ?? throw new ArgumentException("Unknown action. Use an action from this tool's schema.");
+                var metadata = ToolCallNormalizer.GetMetadata(tool.ProtocolTool);
+                // Near-miss names (add_text_box, session_id on presentation, sessionId elsewhere)
+                // are mapped to the single matching canonical name; canonical calls pass through.
+                var (canonicalAction, arguments) = ToolCallNormalizer.Normalize(metadata, request.Params?.Arguments);
 
                 foreach (var (name, value) in arguments)
                 {
-                    if (!properties.TryGetProperty(name, out var schema))
-                        throw new ArgumentException($"Unknown parameter '{name}'.");
-                    ValidateValueKind(name, value, schema);
+                    ValidateValueKind(name, value, properties.GetProperty(name));
                 }
 
                 var suppliedNames = arguments.Keys
                     .Where(name => name != "action")
                     .ToArray();
-                if (tool.ProtocolTool.Name == "presentation")
+                try
                 {
-                    PresentationTools.ValidateActionParameterNames(canonicalAction, suppliedNames);
+                    if (tool.ProtocolTool.Name == "presentation")
+                    {
+                        PresentationTools.ValidateActionParameterNames(canonicalAction, suppliedNames);
+                    }
+                    else
+                    {
+                        ServiceRegistry.ValidateMcpActionParameters(
+                            tool.ProtocolTool.Name,
+                            canonicalAction,
+                            suppliedNames.Where(name => name != "session_id"));
+                    }
                 }
-                else
+                catch (ArgumentException ex)
                 {
-                    ServiceRegistry.ValidateMcpActionParameters(
-                        tool.ProtocolTool.Name,
-                        canonicalAction,
-                        suppliedNames.Where(name => name != "session_id"));
+                    throw new ArgumentException(
+                        ToolCallNormalizer.DescribeInapplicableParameters(metadata, canonicalAction, ex.Message));
+                }
+
+                ToolCallNormalizer.EnsureRequiredParameters(metadata, canonicalAction, arguments);
+
+                if (!ReferenceEquals(arguments, request.Params!.Arguments))
+                {
+                    request.Params.Arguments = arguments;
                 }
             }
             catch (ArgumentException ex)

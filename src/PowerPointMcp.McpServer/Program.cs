@@ -154,34 +154,30 @@ public class Program
                 };
 
                 options.ServerInstructions = """
-                    PowerPointMCP automates Microsoft PowerPoint via COM interop (Windows only).
+                    PowerPointMCP automates Microsoft PowerPoint via COM (Windows only).
 
-                    SESSION LIFECYCLE (all via the single "presentation" tool's action parameter):
-                    1. presentation(action=create, filePath) — create a new deck and open it; returns a sessionId.
-                    2. presentation(action=open, filePath) — open an existing deck; returns a sessionId.
-                    3. Pass that sessionId to all subsequent tools.
-                    4. presentation(action=close, sessionId, save=true) — save and release the PowerPoint process when done.
+                    WORKFLOW
+                    1. presentation(action=create, filePath) or presentation(action=open, filePath) returns a sessionId.
+                    2. Call slide, shape, textframe and the other tools with session_id set to that sessionId.
+                    3. presentation(action=close, sessionId, save=true) saves and closes. presentation(action=list) shows open sessions.
+                    Use full Windows paths, e.g. C:\Users\me\Documents\deck.pptx.
 
-                    Use presentation(action=list) to see which sessions are currently open.
-                    Always provide full Windows paths (e.g. C:\\Users\\me\\Documents\\deck.pptx).
-
-                    NAMING RULES (names are validated exactly against each tool's schema; there are no aliases):
-                    1. Action names are kebab-case, for example: add-text-box, add-rectangle,
-                       list-placeholders, set-placeholder-text, set-text, get-text, add-blank,
-                       get-count, save-as, save-copy-as. Never use underscore action names such as
-                       add_text_box; they are rejected as unknown actions.
-                    2. The presentation tool intentionally uses camelCase parameters: sessionId,
-                       filePath, targetPath. Do not pass session_id to the presentation tool.
-                    3. All other tools (slide, shape, textframe, ...) use snake_case parameters:
-                       session_id, slide_index, shape_index. Pass the sessionId value returned by
-                       the presentation tool as session_id.
-                    4. All PowerPoint indexes are 1-based: the first slide is slide_index=1 and the
-                       first shape is shape_index=1; 0 is invalid.
-                    5. shape(action=add-text-box) and shape(action=add-rectangle) require left, top,
-                       width and height (add-text-box also requires text).
+                    NAMING RULES
+                    1. Action names are kebab-case: add-text-box, add-rectangle, list-placeholders,
+                       set-placeholder-text, set-text, get-text, add-blank, get-count, save-as, save-copy-as.
+                       Never use underscore action names such as add_text_box.
+                    2. The presentation tool uses camelCase parameters: sessionId, filePath, targetPath.
+                       Do not pass session_id to the presentation tool.
+                    3. All other tools use snake_case parameters: session_id, slide_index, shape_index.
+                    4. All PowerPoint indexes are 1-based: the first slide is slide_index=1; 0 is invalid.
+                    5. shape(action=add-text-box) and shape(action=add-rectangle) require left, top, width and height
+                       (add-text-box also requires text).
                     6. There is no generic "save" action. Use presentation(action=save-as) or
                        presentation(action=save-copy-as) with sessionId and targetPath, or
                        presentation(action=close, sessionId, save=true) to save and close.
+
+                    If a call is rejected, the error names the missing parameters or the closest valid action;
+                    fix the call and retry.
                     """;
             })
             .WithToolsFromAssembly()
