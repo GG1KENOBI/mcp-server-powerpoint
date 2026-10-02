@@ -26,6 +26,9 @@ if ($Local) {
         if ($path -match '^(vscode-extension|mcpb|npm-packages)[/\\]|^scripts[/\\](Build-VscodeExtension|Build-NpmPackages|Test-NpmPackages|PackageHelpers)\.ps1$|^\.github[/\\]workflows[/\\](ci|release)\.yml$') {
             $selections['SkillGeneration'] = 'RequiresPowerPoint!=true'
         }
+        if ($path -match '^src[/\\]PowerPointMcp\.McpServer[/\\]PowerPointMcp\.McpServer\.csproj$|^tests[/\\]Shared[/\\]') {
+            $selections['SkillGeneration'] = 'RequiresPowerPoint!=true'
+        }
         if ($path -match '^(\.github[/\\]plugins|plugins)[/\\]|^scripts[/\\](Build-Plugins|Sync-PublishedPluginRepo)\.ps1$|^\.github[/\\]workflows[/\\]publish-plugins\.yml$') {
             $selections['SkillGeneration'] = 'RequiresPowerPoint!=true'
         }

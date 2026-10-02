@@ -26,4 +26,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\PowerPointMcp.CLI\PowerPointMcp.CLI.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Publishes the MCP server with the release settings and inspects the shipped exe. -->
+    <Compile Include="..\Shared\PublishedMcpServer.cs" Link="Shared\PublishedMcpServer.cs" />
+  </ItemGroup>
 </Project>
