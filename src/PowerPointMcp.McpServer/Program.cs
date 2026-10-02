@@ -164,6 +164,24 @@ public class Program
 
                     Use presentation(action=list) to see which sessions are currently open.
                     Always provide full Windows paths (e.g. C:\\Users\\me\\Documents\\deck.pptx).
+
+                    NAMING RULES (names are validated exactly against each tool's schema; there are no aliases):
+                    1. Action names are kebab-case, for example: add-text-box, add-rectangle,
+                       list-placeholders, set-placeholder-text, set-text, get-text, add-blank,
+                       get-count, save-as, save-copy-as. Never use underscore action names such as
+                       add_text_box; they are rejected as unknown actions.
+                    2. The presentation tool intentionally uses camelCase parameters: sessionId,
+                       filePath, targetPath. Do not pass session_id to the presentation tool.
+                    3. All other tools (slide, shape, textframe, ...) use snake_case parameters:
+                       session_id, slide_index, shape_index. Pass the sessionId value returned by
+                       the presentation tool as session_id.
+                    4. All PowerPoint indexes are 1-based: the first slide is slide_index=1 and the
+                       first shape is shape_index=1; 0 is invalid.
+                    5. shape(action=add-text-box) and shape(action=add-rectangle) require left, top,
+                       width and height (add-text-box also requires text).
+                    6. There is no generic "save" action. Use presentation(action=save-as) or
+                       presentation(action=save-copy-as) with sessionId and targetPath, or
+                       presentation(action=close, sessionId, save=true) to save and close.
                     """;
             })
             .WithToolsFromAssembly()

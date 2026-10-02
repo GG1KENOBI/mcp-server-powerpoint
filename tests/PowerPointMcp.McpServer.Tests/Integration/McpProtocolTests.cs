@@ -707,4 +707,98 @@ public sealed class McpProtocolTests : IAsyncLifetime, IAsyncDisposable
         Assert.NotNull(_client.ServerInstructions);
         Assert.Contains("presentation(action=create", _client.ServerInstructions, StringComparison.Ordinal);
     }
+
+    /// <summary>Action names the instructions cite as kebab-case examples.</summary>
+    private static readonly string[] InstructionActionExamples =
+    [
+        "add-text-box", "add-rectangle", "list-placeholders", "set-placeholder-text", "set-text",
+        "get-text", "add-blank", "get-count", "save-as", "save-copy-as"
+    ];
+
+    /// <summary>
+    /// The instructions every client receives on initialize spell out the naming rules agents get
+    /// wrong (underscore actions, session_id on presentation, 0-based indexes, missing geometry,
+    /// a generic save action).
+    /// </summary>
+    [Fact]
+    public void ServerInstructions_StateToolNamingRules()
+    {
+        var instructions = _client!.ServerInstructions;
+        Assert.NotNull(instructions);
+        // Compare with whitespace collapsed so rewrapping the text does not break the test.
+        var flat = string.Join(' ', instructions.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+
+        foreach (var action in InstructionActionExamples)
+        {
+            Assert.Contains(action, flat, StringComparison.Ordinal);
+        }
+        Assert.Contains("Action names are kebab-case", flat, StringComparison.Ordinal);
+        Assert.Contains("Never use underscore action names such as add_text_box", flat, StringComparison.Ordinal);
+        Assert.Contains("camelCase parameters: sessionId, filePath, targetPath", flat, StringComparison.Ordinal);
+        Assert.Contains("Do not pass session_id to the presentation tool", flat, StringComparison.Ordinal);
+        Assert.Contains("snake_case parameters: session_id, slide_index, shape_index", flat, StringComparison.Ordinal);
+        Assert.Contains("All PowerPoint indexes are 1-based", flat, StringComparison.Ordinal);
+        Assert.Contains("add-text-box) and shape(action=add-rectangle) require left, top, width and height", flat, StringComparison.Ordinal);
+        Assert.Contains("There is no generic \"save\" action", flat, StringComparison.Ordinal);
+        Assert.Contains("presentation(action=close, sessionId, save=true) to save and close", flat, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Keeps the instructions honest: every rule they state must hold for the live tool schemas.
+    /// </summary>
+    [Fact]
+    public async Task ServerInstructions_NamingRulesMatchToolSchemas()
+    {
+        var tools = (await _client!.ListToolsAsync(cancellationToken: _cts.Token))
+            .ToDictionary(tool => tool.Name, tool => tool.JsonSchema.GetProperty("properties"));
+
+        // Rule 1: actions are kebab-case and the cited examples exist.
+        var allActions = tools.Values
+            .SelectMany(properties => properties.GetProperty("action").GetProperty("enum").EnumerateArray())
+            .Select(action => action.GetString()!)
+            .ToHashSet(StringComparer.Ordinal);
+        Assert.DoesNotContain(allActions, action => action.Contains('_', StringComparison.Ordinal));
+        foreach (var action in InstructionActionExamples)
+        {
+            Assert.Contains(action, allActions);
+        }
+
+        // Rule 2: presentation takes camelCase parameters only.
+        var presentation = tools["presentation"];
+        foreach (var parameter in new[] { "sessionId", "filePath", "targetPath" })
+        {
+            Assert.True(presentation.TryGetProperty(parameter, out _), $"presentation is missing {parameter}");
+        }
+        Assert.False(presentation.TryGetProperty("session_id", out _));
+
+        // Rule 3: the other tools take snake_case parameters.
+        foreach (var name in new[] { "slide", "shape", "textframe" })
+        {
+            Assert.True(tools[name].TryGetProperty("session_id", out _), $"{name} is missing session_id");
+            Assert.True(tools[name].TryGetProperty("slide_index", out _), $"{name} is missing slide_index");
+            Assert.False(tools[name].TryGetProperty("sessionId", out _), $"{name} unexpectedly has sessionId");
+        }
+        Assert.True(tools["shape"].TryGetProperty("shape_index", out _));
+        Assert.True(tools["textframe"].TryGetProperty("shape_index", out _));
+
+        // Rule 5: geometry is required for add-text-box and add-rectangle.
+        foreach (var parameter in new[] { "left", "top", "width", "height" })
+        {
+            var description = tools["shape"].GetProperty(parameter).GetProperty("description").GetString()!;
+            var requiredFor = description[(description.IndexOf("required for:", StringComparison.Ordinal) + "required for:".Length)..];
+            requiredFor = requiredFor[..requiredFor.IndexOf(')', StringComparison.Ordinal)];
+            var actions = requiredFor.Split(',', StringSplitOptions.TrimEntries);
+            Assert.Contains("add-text-box", actions);
+            Assert.Contains("add-rectangle", actions);
+        }
+
+        // Rule 6: no generic save action; save-as, save-copy-as and close(save) exist instead.
+        var presentationActions = presentation.GetProperty("action").GetProperty("enum").EnumerateArray()
+            .Select(action => action.GetString()).ToArray();
+        Assert.DoesNotContain("save", presentationActions);
+        Assert.Contains("save-as", presentationActions);
+        Assert.Contains("save-copy-as", presentationActions);
+        Assert.Contains("close", presentationActions);
+        Assert.True(presentation.TryGetProperty("save", out _));
+    }
 }
