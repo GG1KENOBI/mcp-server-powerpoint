@@ -6,7 +6,6 @@ using Sbroenne.PowerPointMcp.ComInterop.Session;
 using Sbroenne.PowerPointMcp.Core.Assets;
 using Sbroenne.PowerPointMcp.Core.Deck;
 using Sbroenne.PowerPointMcp.Core.Design;
-using Sbroenne.PowerPointMcp.Core.Master;
 using Office = OfficeInterop::Microsoft.Office.Core;
 using PowerPoint = Microsoft.Office.Interop.PowerPoint;
 
@@ -21,7 +20,6 @@ public sealed class ComposeCommands : IComposeCommands
     private static readonly string[] EditedWarning =
         ["Parts of this slide were edited after composition (update-text); the stored JSON does not include those edits."];
 
-    private readonly MasterCommands _masters = new();
 
     /// <inheritdoc/>
     public ComposeOperationResult Kinds(IPresentationBatch batch) =>
@@ -283,7 +281,7 @@ public sealed class ComposeCommands : IComposeCommands
     }
 
     /// <summary>Parses the spec, reads the deck, resolves the profile, and reads image headers.</summary>
-    private Prepared Prepare(IPresentationBatch batch, string? spec, string? specPath, string? profileName)
+    private static Prepared Prepare(IPresentationBatch batch, string? spec, string? specPath, string? profileName)
     {
         string json;
         if (spec is not null && specPath is not null)
@@ -339,36 +337,11 @@ public sealed class ComposeCommands : IComposeCommands
             }
         });
 
-        var name = profileName ?? compositionSpec.Profile ?? ThemeProfile.Name;
-        ResolvedProfile resolved;
-        if (name == ThemeProfile.Name)
-        {
-            var colors = _masters.GetThemeColors(batch, 1);
-            var fonts = _masters.GetThemeFonts(batch, 1);
-            var (themeProfile, _) = ThemeProfile.FromTheme(colors.Success ? colors.ThemeColors : null,
-                fonts.Success ? fonts.MajorThemeFonts?.GetValueOrDefault("latin") : null,
-                fonts.Success ? fonts.MinorThemeFonts?.GetValueOrDefault("latin") : null);
-            var result = DesignProfiles.Resolve(themeProfile);
-            if (!result.IsValid)
-                return new Prepared { Failure = Fail($"The deck theme could not be turned into a profile: {string.Join("; ", result.Errors)}. Pass profile=default.", warnings) };
-            resolved = result.Resolved!;
-        }
-        else
-        {
-            var definition = ProfileStore.Find(name);
-            if (definition is null)
-            {
-                return new Prepared
-                {
-                    Failure = Fail($"Unknown profile '{name}'. Available: {string.Join(", ", ProfileStore.List().Select(entry => entry.Name))}.", warnings),
-                };
-            }
-            var result = DesignProfiles.Resolve(definition, ProfileStore.Find);
-            if (!result.IsValid)
-                return new Prepared { Failure = Fail($"Profile '{name}' is invalid: {string.Join("; ", result.Errors)}", warnings) };
-            warnings.AddRange(result.Warnings);
-            resolved = result.Resolved!;
-        }
+        var (resolvedProfile, profileError, profileWarnings) = ProfileResolver.Resolve(batch, profileName ?? compositionSpec.Profile);
+        warnings.AddRange(profileWarnings);
+        if (profileError is not null)
+            return new Prepared { Failure = Fail(profileError, warnings) };
+        var resolved = resolvedProfile!;
 
         var images = new Dictionary<string, (int, int)>(StringComparer.Ordinal);
         if (compositionSpec.Image is { } image)

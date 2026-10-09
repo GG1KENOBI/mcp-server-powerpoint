@@ -9,6 +9,7 @@ using Sbroenne.PowerPointMcp.Core.Chart;
 using Sbroenne.PowerPointMcp.Core.Composition;
 using Sbroenne.PowerPointMcp.Core.CustomShow;
 using Sbroenne.PowerPointMcp.Core.Deck;
+using Sbroenne.PowerPointMcp.Core.Diagram;
 using Sbroenne.PowerPointMcp.Core.Export;
 using Sbroenne.PowerPointMcp.Core.Image;
 using Sbroenne.PowerPointMcp.Core.Layout;
@@ -74,6 +75,7 @@ public sealed class PowerPointMcpService : IDisposable
     private readonly DeckCommands _deckCommands = new();
     private readonly ReviewCommands _reviewCommands = new();
     private readonly ComposeCommands _composeCommands = new();
+    private readonly DiagramCommands _diagramCommands = new();
 
     /// <summary>Gets the UTC time this daemon instance started.</summary>
     public DateTime StartTime => _startTime;
@@ -318,6 +320,9 @@ public sealed class PowerPointMcpService : IDisposable
                 "compose" => DispatchSimple<ComposeAction>(action, request,
                     ServiceRegistry.Compose.TryParseAction,
                     (a, batch) => ServiceRegistry.Compose.DispatchToCore(_composeCommands, a, batch, request.Args)),
+                "diagram" => DispatchSimple<DiagramAction>(action, request,
+                    ServiceRegistry.Diagram.TryParseAction,
+                    (a, batch) => ServiceRegistry.Diagram.DispatchToCore(_diagramCommands, a, batch, request.Args)),
                 _ => new ServiceResponse { Success = false, ErrorMessage = $"Unknown command category: {category}" }
             };
 

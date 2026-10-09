@@ -95,15 +95,8 @@ internal static class SlideRenderer
                 : LayoutPicker.AddSlide(presentation, insertIndex, layouts.TitleOnlyIndex, PowerPoint.PpSlideLayout.ppLayoutTitleOnly);
             TagSlide(slide, planned, plan, profile);
 
-            foreach (var element in planned.Elements)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                var shape = Create(slide, element, shapes, warnings);
-                if (shape is null)
-                    continue;
-                shapes[element.Key] = shape;
-                Decorate(shape, element, planned);
-            }
+            foreach (var (key, shape) in CreateElements(slide, planned.Elements, key => AppIdFor(planned, key), warnings, cancellationToken))
+                shapes[key] = shape;
 
             if (planned.Notes is { Length: > 0 } notes)
                 WriteNotes(slide, notes, warnings);
@@ -169,6 +162,56 @@ internal static class SlideRenderer
     }
 
     internal static string AppIdFor(PlannedSlide slide, string key) => $"{slide.AppId}/{key}";
+
+    /// <summary>
+    /// Creates and styles the elements in order (connectors after their end shapes) and returns
+    /// the shapes by key. The caller owns and releases the returned shapes.
+    /// </summary>
+    internal static Dictionary<string, PowerPoint.Shape> CreateElements(
+        PowerPoint.Slide slide,
+        IReadOnlyList<PlannedElement> elements,
+        Func<string, string> appIdFor,
+        List<string> warnings,
+        CancellationToken cancellationToken)
+    {
+        var shapes = new Dictionary<string, PowerPoint.Shape>(StringComparer.Ordinal);
+        bool completed = false;
+        try
+        {
+            foreach (var element in elements)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var shape = Create(slide, element, shapes, warnings);
+                if (shape is null)
+                    continue;
+                shapes[element.Key] = shape;
+                Decorate(shape, element, appIdFor(element.Key));
+            }
+            completed = true;
+            return shapes;
+        }
+        finally
+        {
+            if (!completed)
+            {
+                foreach (var shape in shapes.Values)
+                {
+                    var item = shape;
+                    ComUtilities.Release(ref item!);
+                }
+            }
+        }
+    }
+
+    /// <summary>Fits text shapes that must each fit their own box (shared proportional shrink); returns overflow notes.</summary>
+    internal static List<string> FitIndividually(IReadOnlyList<string> keys, Dictionary<string, PowerPoint.Shape> shapes, float minFontSize, bool canShrink)
+    {
+        var region = new FitRegion { Key = "diagram", Box = default, Mode = "each", Keys = keys, MinFontSize = minFontSize };
+        var results = keys.Where(shapes.ContainsKey).ToDictionary(key => key, key => new RenderedElement { Key = key, Role = "", ShapeId = 0, AppId = "", Box = [] });
+        var rendered = new RenderedSlide { SlideId = 0, SlideIndex = 0, AppId = "", Elements = [], Overflow = [], Warnings = [] };
+        FitEach(region, keys.Where(shapes.ContainsKey).ToList(), shapes, results, canShrink, rendered);
+        return rendered.Overflow;
+    }
 
     private static PowerPoint.Shape? Create(PowerPoint.Slide slide, PlannedElement element, Dictionary<string, PowerPoint.Shape> created, List<string> warnings)
     {
@@ -238,14 +281,14 @@ internal static class SlideRenderer
         _ => Office.MsoAutoShapeType.msoShapeRectangle,
     };
 
-    private static void Decorate(PowerPoint.Shape shape, PlannedElement element, PlannedSlide planned)
+    private static void Decorate(PowerPoint.Shape shape, PlannedElement element, string appId)
     {
         if (!element.TitlePlaceholder)
             shape.Name = element.Key;
         var tags = shape.Tags;
         try
         {
-            tags.Add(DeckRoles.IdTag, AppIdFor(planned, element.Key));
+            tags.Add(DeckRoles.IdTag, appId);
             tags.Add(DeckRoles.RoleTag, element.Role);
             if (element.Component is not null)
                 tags.Add(DeckRoles.ComponentTag, element.Component);
@@ -611,6 +654,9 @@ internal static class SlideRenderer
             format = connector.ConnectorFormat;
             format.BeginConnect(from, Math.Clamp(element.FromSite, 1, Math.Max(1, from.ConnectionSiteCount)));
             format.EndConnect(to, Math.Clamp(element.ToSite, 1, Math.Max(1, to.ConnectionSiteCount)));
+            // Site 0 means "let PowerPoint choose the closest sites".
+            if (element.FromSite == 0 || element.ToSite == 0)
+                connector.RerouteConnections();
         }
         finally
         {

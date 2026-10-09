@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -63,7 +62,7 @@ public static partial class CompositionParser
             if (root.ValueKind != JsonValueKind.Object)
                 return new CompositionParseResult { Errors = ["$: the composition must be a JSON object."], Warnings = [] };
 
-            var reader = new Reader(errors, warnings);
+            var reader = new JsonSpecReader(errors, warnings);
             foreach (var property in root.EnumerateObject().Where(property => !RootKeys.Contains(property.Name)))
                 warnings.Add($"$.{property.Name}: unknown property ignored.");
 
@@ -124,7 +123,7 @@ public static partial class CompositionParser
         }
     }
 
-    private static SpecFit ReadFit(Reader reader, JsonElement root)
+    private static SpecFit ReadFit(JsonSpecReader reader, JsonElement root)
     {
         if (!root.TryGetProperty("fit", out var fit) || fit.ValueKind == JsonValueKind.Null)
             return new SpecFit(["shrink", "split"], null);
@@ -145,7 +144,7 @@ public static partial class CompositionParser
         return new SpecFit(policy, min);
     }
 
-    private static Dictionary<string, string>? ReadMetadata(Reader reader, JsonElement root)
+    private static Dictionary<string, string>? ReadMetadata(JsonSpecReader reader, JsonElement root)
     {
         if (!root.TryGetProperty("metadata", out var metadata) || metadata.ValueKind == JsonValueKind.Null)
             return null;
@@ -167,7 +166,7 @@ public static partial class CompositionParser
         return result;
     }
 
-    private static SpecPoint? ReadPoint(Reader reader, JsonElement element, string path)
+    private static SpecPoint? ReadPoint(JsonSpecReader reader, JsonElement element, string path)
     {
         if (element.ValueKind == JsonValueKind.String)
         {
@@ -191,7 +190,7 @@ public static partial class CompositionParser
         return value is null ? null : new SpecPoint(value, detail, level);
     }
 
-    private static SpecColumn? ReadColumn(Reader reader, JsonElement element, string path)
+    private static SpecColumn? ReadColumn(JsonSpecReader reader, JsonElement element, string path)
     {
         if (!reader.IsObject(element, path))
             return null;
@@ -206,7 +205,7 @@ public static partial class CompositionParser
         return heading is null || points is null ? null : new SpecColumn(heading, points, tone);
     }
 
-    private static SpecCard? ReadCard(Reader reader, JsonElement element, string path)
+    private static SpecCard? ReadCard(JsonSpecReader reader, JsonElement element, string path)
     {
         if (!reader.IsObject(element, path))
             return null;
@@ -215,7 +214,7 @@ public static partial class CompositionParser
         return heading is null ? null : new SpecCard(heading, reader.String(element, path, "body", required: false), reader.String(element, path, "badge", required: false));
     }
 
-    private static SpecKpi? ReadKpi(Reader reader, JsonElement element, string path)
+    private static SpecKpi? ReadKpi(JsonSpecReader reader, JsonElement element, string path)
     {
         if (!reader.IsObject(element, path))
             return null;
@@ -229,7 +228,7 @@ public static partial class CompositionParser
             : new SpecKpi(value, label, reader.String(element, path, "delta", required: false), trend, reader.String(element, path, "note", required: false), sentiment);
     }
 
-    private static SpecImage? ReadImage(Reader reader, JsonElement element, string path)
+    private static SpecImage? ReadImage(JsonSpecReader reader, JsonElement element, string path)
     {
         reader.Unknown(element, path, "path", "alt", "fit", "focal_x", "focal_y", "position", "attribution");
         var file = reader.String(element, path, "path", required: true);
@@ -243,7 +242,7 @@ public static partial class CompositionParser
         return file is null ? null : new SpecImage(file, alt, fit, focalX, focalY, position, reader.String(element, path, "attribution", required: false));
     }
 
-    private static SpecTable? ReadTable(Reader reader, JsonElement element, string path)
+    private static SpecTable? ReadTable(JsonSpecReader reader, JsonElement element, string path)
     {
         reader.Unknown(element, path, "header", "rows", "align", "total_row", "highlight", "column_weights", "repeat_header");
         var header = reader.StringArray(element, path + "", "header");
@@ -324,7 +323,7 @@ public static partial class CompositionParser
         }
     }
 
-    private static SpecChart? ReadChart(Reader reader, JsonElement element, string path)
+    private static SpecChart? ReadChart(JsonSpecReader reader, JsonElement element, string path)
     {
         reader.Unknown(element, path, "type", "categories", "series", "number_format", "value_axis_title", "category_axis_title", "legend", "data_labels");
         var type = reader.Enum(element, path, "type", CompositionKinds.ChartTypes) ?? "column";
@@ -378,7 +377,7 @@ public static partial class CompositionParser
             reader.Bool(element, path, "data_labels"));
     }
 
-    private static SpecMilestone? ReadMilestone(Reader reader, JsonElement element, string path)
+    private static SpecMilestone? ReadMilestone(JsonSpecReader reader, JsonElement element, string path)
     {
         if (!reader.IsObject(element, path))
             return null;
@@ -389,7 +388,7 @@ public static partial class CompositionParser
         return date is null || label is null ? null : new SpecMilestone(date, label, reader.String(element, path, "detail", required: false), status);
     }
 
-    private static SpecStep? ReadStep(Reader reader, JsonElement element, string path)
+    private static SpecStep? ReadStep(JsonSpecReader reader, JsonElement element, string path)
     {
         if (element.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(element.GetString()))
             return new SpecStep(element.GetString()!, null);
@@ -400,7 +399,7 @@ public static partial class CompositionParser
         return label is null ? null : new SpecStep(label, reader.String(element, path, "detail", required: false));
     }
 
-    private static SpecNode? ReadNode(Reader reader, JsonElement element, string path, int depth)
+    private static SpecNode? ReadNode(JsonSpecReader reader, JsonElement element, string path, int depth)
     {
         if (!reader.IsObject(element, path))
             return null;
@@ -415,7 +414,7 @@ public static partial class CompositionParser
         return label is null ? null : new SpecNode(label, reader.String(element, path, "detail", required: false), children, reader.String(element, path, "id", required: false));
     }
 
-    private static SpecQuote? ReadQuote(Reader reader, JsonElement element, string path)
+    private static SpecQuote? ReadQuote(JsonSpecReader reader, JsonElement element, string path)
     {
         reader.Unknown(element, path, "text", "author", "role");
         var text = reader.String(element, path, "text", required: true);
@@ -423,7 +422,7 @@ public static partial class CompositionParser
         return text is null || author is null ? null : new SpecQuote(text, author, reader.String(element, path, "role", required: false));
     }
 
-    private static SpecReference? ReadReference(Reader reader, JsonElement element, string path)
+    private static SpecReference? ReadReference(JsonSpecReader reader, JsonElement element, string path)
     {
         if (element.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(element.GetString()))
             return new SpecReference(element.GetString()!, null, null);
@@ -439,201 +438,4 @@ public static partial class CompositionParser
 
     [GeneratedRegex("^[A-Za-z0-9_]{1,40}$", RegexOptions.CultureInvariant)]
     private static partial Regex MetaKey();
-
-    /// <summary>Typed accessors that record errors with paths.</summary>
-    private sealed class Reader(List<string> errors, List<string> warnings)
-    {
-        public List<string> Errors { get; } = errors;
-
-        public List<string> Warnings { get; } = warnings;
-
-        public bool IsObject(JsonElement element, string path)
-        {
-            if (element.ValueKind == JsonValueKind.Object)
-                return true;
-            Errors.Add($"{path}: must be an object.");
-            return false;
-        }
-
-        public void Unknown(JsonElement element, string path, params string[] known)
-        {
-            foreach (var property in element.EnumerateObject().Where(property => System.Array.IndexOf(known, property.Name) < 0))
-                Warnings.Add($"{path}.{property.Name}: unknown property ignored.");
-        }
-
-        public string? String(JsonElement element, string path, string name, bool required, bool allowEmpty = false)
-        {
-            if (!element.TryGetProperty(name, out var value) || value.ValueKind == JsonValueKind.Null)
-            {
-                if (required)
-                    Errors.Add($"{path}.{name}: required.");
-                return null;
-            }
-            if (value.ValueKind != JsonValueKind.String)
-            {
-                Errors.Add($"{path}.{name}: must be a string (got {value.ValueKind.ToString().ToLowerInvariant()}).");
-                return null;
-            }
-            var text = value.GetString()!;
-            if (!allowEmpty && string.IsNullOrWhiteSpace(text))
-            {
-                if (required)
-                    Errors.Add($"{path}.{name}: must not be empty.");
-                return null;
-            }
-            return text;
-        }
-
-        public string? Enum(JsonElement element, string path, string name, string[] allowed)
-        {
-            var value = String(element, path, name, required: false);
-            if (value is not null && System.Array.IndexOf(allowed, value) < 0)
-            {
-                Errors.Add($"{path}.{name}: '{value}' must be one of {string.Join(", ", allowed)}.");
-                return null;
-            }
-            return value;
-        }
-
-        public int? Int(JsonElement element, string path, string name, int min, int max)
-        {
-            if (!element.TryGetProperty(name, out var value) || value.ValueKind == JsonValueKind.Null)
-                return null;
-            if (value.ValueKind != JsonValueKind.Number || !value.TryGetInt32(out var number))
-            {
-                Errors.Add($"{path}.{name}: must be a whole number.");
-                return null;
-            }
-            if (number < min || number > max)
-            {
-                Errors.Add($"{path}.{name}: {number} is outside {min}-{max}.");
-                return null;
-            }
-            return number;
-        }
-
-        public float? Float(JsonElement element, string path, string name, float min, float max)
-        {
-            if (!element.TryGetProperty(name, out var value) || value.ValueKind == JsonValueKind.Null)
-                return null;
-            if (value.ValueKind != JsonValueKind.Number)
-            {
-                Errors.Add($"{path}.{name}: must be a number.");
-                return null;
-            }
-            var number = value.GetSingle();
-            if (number < min || number > max)
-            {
-                Errors.Add($"{path}.{name}: {number.ToString(CultureInfo.InvariantCulture)} is outside {min.ToString(CultureInfo.InvariantCulture)}-{max.ToString(CultureInfo.InvariantCulture)}.");
-                return null;
-            }
-            return number;
-        }
-
-        public bool? Bool(JsonElement element, string path, string name)
-        {
-            if (!element.TryGetProperty(name, out var value) || value.ValueKind == JsonValueKind.Null)
-                return null;
-            if (value.ValueKind is JsonValueKind.True or JsonValueKind.False)
-                return value.GetBoolean();
-            Errors.Add($"{path}.{name}: must be true or false.");
-            return null;
-        }
-
-        public List<string>? StringArray(JsonElement element, string path, string name)
-        {
-            if (!element.TryGetProperty(name, out var value) || value.ValueKind == JsonValueKind.Null)
-                return null;
-            if (value.ValueKind != JsonValueKind.Array)
-            {
-                Errors.Add($"{path}.{name}: must be an array of strings.");
-                return null;
-            }
-            var result = new List<string>();
-            int index = 0;
-            foreach (var item in value.EnumerateArray())
-            {
-                if (item.ValueKind == JsonValueKind.String)
-                    result.Add(item.GetString()!);
-                else if (item.ValueKind == JsonValueKind.Number)
-                    result.Add(item.GetRawText());
-                else
-                    Errors.Add($"{path}.{name}[{index}]: must be a string.");
-                index++;
-            }
-            return result;
-        }
-
-        public List<int>? IntArray(JsonElement element, string path, string name)
-        {
-            if (!element.TryGetProperty(name, out var value) || value.ValueKind == JsonValueKind.Null)
-                return null;
-            if (value.ValueKind != JsonValueKind.Array)
-            {
-                Errors.Add($"{path}.{name}: must be an array of whole numbers.");
-                return null;
-            }
-            var result = new List<int>();
-            foreach (var item in value.EnumerateArray())
-            {
-                if (item.ValueKind == JsonValueKind.Number && item.TryGetInt32(out var number))
-                    result.Add(number);
-                else
-                    Errors.Add($"{path}.{name}: must contain whole numbers only.");
-            }
-            return result;
-        }
-
-        public List<float>? FloatArray(JsonElement element, string path, string name)
-        {
-            if (!element.TryGetProperty(name, out var value) || value.ValueKind == JsonValueKind.Null)
-                return null;
-            if (value.ValueKind != JsonValueKind.Array)
-            {
-                Errors.Add($"{path}.{name}: must be an array of numbers.");
-                return null;
-            }
-            var result = new List<float>();
-            foreach (var item in value.EnumerateArray())
-            {
-                if (item.ValueKind == JsonValueKind.Number)
-                    result.Add(item.GetSingle());
-                else
-                    Errors.Add($"{path}.{name}: must contain numbers only.");
-            }
-            return result;
-        }
-
-        public List<T>? Array<T>(JsonElement element, string path, string name, Func<JsonElement, string, T?> read) where T : class
-        {
-            if (!element.TryGetProperty(name, out var value) || value.ValueKind == JsonValueKind.Null)
-                return null;
-            if (value.ValueKind != JsonValueKind.Array)
-            {
-                Errors.Add($"{path}.{name}: must be an array.");
-                return null;
-            }
-            var result = new List<T>();
-            int index = 0;
-            foreach (var item in value.EnumerateArray())
-            {
-                if (read(item, $"{path}.{name}[{index}]") is { } parsed)
-                    result.Add(parsed);
-                index++;
-            }
-            return result;
-        }
-
-        public T? Object<T>(JsonElement element, string path, string name, Func<JsonElement, string, T?> read) where T : class
-        {
-            if (!element.TryGetProperty(name, out var value) || value.ValueKind == JsonValueKind.Null)
-                return null;
-            if (value.ValueKind != JsonValueKind.Object)
-            {
-                Errors.Add($"{path}.{name}: must be an object.");
-                return null;
-            }
-            return read(value, $"{path}.{name}");
-        }
-    }
 }
