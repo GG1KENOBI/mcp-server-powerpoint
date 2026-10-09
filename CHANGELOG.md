@@ -1,5 +1,50 @@
 # Changelog
 
+## [0.3.2] - 2026-10-08
+
+### Major Changes
+
+- [#111](https://github.com/sbroenne/mcp-server-powerpoint/pull/111) [`66fe287`](https://github.com/sbroenne/mcp-server-powerpoint/commit/66fe2876ca63d32d6707107039129e53571a8807) Thanks [@sbroenne](https://github.com/sbroenne)! - MCP callers must use `presentation_session_id` for presentation lifecycle inputs and returned session IDs.
+  The previous `sessionId` MCP spelling is no longer accepted. The CLI and internal session APIs
+  are unchanged.
+
+### Minor Changes
+
+- [#111](https://github.com/sbroenne/mcp-server-powerpoint/pull/111) [`66fe287`](https://github.com/sbroenne/mcp-server-powerpoint/commit/66fe2876ca63d32d6707107039129e53571a8807) Thanks [@sbroenne](https://github.com/sbroenne)! - Replace bundled skill reference catalogs with concise MCP and CLI entry skills, publish the full
+  guides on the documentation site, and add an optional deck-design skill.
+
+- [#110](https://github.com/sbroenne/mcp-server-powerpoint/pull/110) [`2dd238a`](https://github.com/sbroenne/mcp-server-powerpoint/commit/2dd238af0c398424f6bf767988950fc5bcdb0ec7) Thanks [@sbroenne](https://github.com/sbroenne)! - Picture tools now offer full crop-frame editing, transparency controls, relative brightness and contrast adjustments, and automatic image compression at PowerPoint-style resolution presets. Picture insertion also supports an explicit compression mode.
+
+- [#111](https://github.com/sbroenne/mcp-server-powerpoint/pull/111) [`66fe287`](https://github.com/sbroenne/mcp-server-powerpoint/commit/66fe2876ca63d32d6707107039129e53571a8807) Thanks [@sbroenne](https://github.com/sbroenne)! - Add explicitly read-only MCP aliases for inspection actions and a bounded slide overview.
+
+### Patch Changes
+
+- [#109](https://github.com/sbroenne/mcp-server-powerpoint/pull/109) [`6aa8978`](https://github.com/sbroenne/mcp-server-powerpoint/commit/6aa897826282d9f398661b47baa78226cff1c074) Thanks [@sbroenne](https://github.com/sbroenne)! - **Adding several charts in a row works again** ([#108](https://github.com/sbroenne/mcp-server-powerpoint/issues/108)): chart actions (`add-chart`, `get-chart-data`, `add-series`, `replace-chart-data`) left PowerPoint's chart data window ("Chart in Microsoft PowerPoint" in Excel) open. The next `add-chart` then failed with "The chart data grid is already open". Each chart action now closes that window when it finishes, so the next chart can be added straight away and no stray Excel window is left on screen.
+
+- [#111](https://github.com/sbroenne/mcp-server-powerpoint/pull/111) [`66fe287`](https://github.com/sbroenne/mcp-server-powerpoint/commit/66fe2876ca63d32d6707107039129e53571a8807) Thanks [@sbroenne](https://github.com/sbroenne)! - Keep MCP requests responsive during PowerPoint work, honor cancellation without closing unrelated
+  presentations, and reclaim sessions created after cancellation. Preserve Core parameter documentation
+  in generated tool descriptions, reject missing or blank session identifiers before dispatch, and
+  clarify session ownership, call ordering, and safe handling of presentation contents.
+  
+  Reject session startup after shutdown and avoid quitting a shared PowerPoint application while
+  other presentations remain open.
+
+## [0.3.1] - 2026-10-07
+
+### Patch Changes
+
+- [#104](https://github.com/sbroenne/mcp-server-powerpoint/pull/104) [`bf9a6e5`](https://github.com/sbroenne/mcp-server-powerpoint/commit/bf9a6e50205e67e7011774e129cc465ebde892d6) Thanks [@sbroenne](https://github.com/sbroenne)! - **Standalone downloads work with PowerPoint again** ([#103](https://github.com/sbroenne/mcp-server-powerpoint/issues/103)): the MCP Server and CLI `.exe` downloads, and the npm packages and Claude Desktop bundle that use them, failed every PowerPoint action with "Built-in COM has been disabled via a feature switch". They are no longer trimmed, so creating and opening presentations works again. The downloads are larger as a result. The NuGet .NET tools were not affected.
+
+## [0.3.0] - 2026-10-02
+
+### Minor Changes
+
+- [#99](https://github.com/sbroenne/mcp-server-powerpoint/pull/99) [`9affc57`](https://github.com/sbroenne/mcp-server-powerpoint/commit/9affc57786da5395145fbbc7308c35ae75731da5) Thanks [@sbroenne](https://github.com/sbroenne)! - Add npm launchers and native Windows x64/ARM64 runtime packages for the MCP server and `pptcli`. Agent plugins and the Claude Desktop bundle now launch the public npm packages through `npx`, so those installation paths require Node.js 18 or later.
+  
+  Modernize MCP responses with structured content, generated output schemas, stricter pre-dispatch argument validation, and cancellation-aware calls while retaining text JSON compatibility.
+  
+  Harden the metadata-only MCPB build, add native x64 and ARM64 VS Code packages, and improve extension startup diagnostics for Windows and desktop PowerPoint prerequisites.
+
 ## [0.2.1] - 2026-09-28
 
 ### Minor Changes
