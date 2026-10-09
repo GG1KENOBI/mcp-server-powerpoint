@@ -13,7 +13,6 @@ namespace Sbroenne.PowerPointMcp.Core.Review;
 public sealed class ReviewCommands : IReviewCommands
 {
     private const int MaxPageSize = 200;
-    private const int MaxScaledRuns = 400;
     private const float GeometryStaleTolerance = 0.5f;
 
     private static readonly string[] Severities = ["info", "warning", "error"];
@@ -272,9 +271,9 @@ public sealed class ReviewCommands : IReviewCommands
         {
             frame = shape.TextFrame;
             range = frame.TextRange;
-            var sizes = ReadRunSizes(range);
+            var sizes = TextRuns.ReadSizes(range);
             if (sizes is null)
-                return Outcome(action, "skipped", $"The text has more than {MaxScaledRuns} formatting runs; scale it manually.");
+                return Outcome(action, "skipped", $"The text has more than {TextRuns.MaxRuns} formatting runs; scale it manually.");
             var smallest = sizes.Where(size => size > 0).DefaultIfEmpty(0).Min();
             if (smallest <= 0)
                 return Outcome(action, "skipped", "Font sizes could not be read.");
@@ -282,7 +281,7 @@ public sealed class ReviewCommands : IReviewCommands
             if (action.Code == "small-text")
             {
                 var factor = action.FontSizeAfter!.Value / smallest;
-                WriteRunSizes(range, sizes, factor);
+                TextRuns.WriteSizes(range, sizes, factor);
                 return Outcome(action, "applied", $"Scaled every run by {factor:0.##}; smallest text is now {Fmt(smallest * factor)} pt.");
             }
 
@@ -291,73 +290,18 @@ public sealed class ReviewCommands : IReviewCommands
             var margins = frame.MarginTop + frame.MarginBottom;
             for (var target = smallest - 0.5f; target >= floor - 0.001f; target -= 0.5f)
             {
-                WriteRunSizes(range, sizes, target / smallest);
+                TextRuns.WriteSizes(range, sizes, target / smallest);
                 if (range.BoundHeight + margins <= shape.Height + 1f)
                     return Outcome(action, "applied", $"Scaled every run by {target / smallest:0.##}; smallest text {Fmt(smallest)} → {Fmt(target)} pt. Measured text height {Fmt(range.BoundHeight)} pt fits the {Fmt(shape.Height)} pt box.");
             }
 
-            WriteRunSizes(range, sizes, 1f);
+            TextRuns.WriteSizes(range, sizes, 1f);
             return Outcome(action, "failed", $"The text still overflows at {Fmt(floor)} pt; original sizes were restored. Split the content or enlarge the box.");
         }
         finally
         {
             if (range is not null) ComUtilities.Release(ref range);
             if (frame is not null) ComUtilities.Release(ref frame);
-        }
-    }
-
-    private static List<float>? ReadRunSizes(PowerPoint.TextRange range)
-    {
-        PowerPoint.TextRange? runs = null;
-        try
-        {
-            runs = range.Runs();
-            if (runs.Count > MaxScaledRuns)
-                return null;
-            var sizes = new List<float>(runs.Count);
-            for (int index = 1; index <= runs.Count; index++)
-            {
-                PowerPoint.TextRange? run = null;
-                PowerPoint.Font? font = null;
-                try
-                {
-                    run = range.Runs(index, 1);
-                    font = run.Font;
-                    sizes.Add(font.Size);
-                }
-                finally
-                {
-                    if (font is not null) ComUtilities.Release(ref font);
-                    if (run is not null) ComUtilities.Release(ref run);
-                }
-            }
-            return sizes;
-        }
-        finally
-        {
-            if (runs is not null) ComUtilities.Release(ref runs);
-        }
-    }
-
-    private static void WriteRunSizes(PowerPoint.TextRange range, List<float> sizes, float factor)
-    {
-        for (int index = 1; index <= sizes.Count; index++)
-        {
-            if (sizes[index - 1] <= 0)
-                continue;
-            PowerPoint.TextRange? run = null;
-            PowerPoint.Font? font = null;
-            try
-            {
-                run = range.Runs(index, 1);
-                font = run.Font;
-                font.Size = MathF.Round(sizes[index - 1] * factor * 10f) / 10f;
-            }
-            finally
-            {
-                if (font is not null) ComUtilities.Release(ref font);
-                if (run is not null) ComUtilities.Release(ref run);
-            }
         }
     }
 

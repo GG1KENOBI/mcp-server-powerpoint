@@ -947,7 +947,7 @@ public sealed class ChartCommands : IChartCommands
         };
     }
 
-    private static void WithChartData(PowerPoint.Chart chart, Action operation) =>
+    internal static void WithChartData(PowerPoint.Chart chart, Action operation) =>
         WithChartData(chart, () =>
         {
             operation();
@@ -960,7 +960,15 @@ public sealed class ChartCommands : IChartCommands
     /// grid left open makes the next AddChart2/Activate fail with "The chart data grid is
     /// already open" and leaves a visible Excel window on screen.
     /// </summary>
-    private static T WithChartData<T>(PowerPoint.Chart chart, Func<T> operation)
+    internal static T WithChartData<T>(PowerPoint.Chart chart, Func<T> operation) =>
+        WithChartWorkbook(chart, _ => operation());
+
+    /// <summary>
+    /// Same as <see cref="WithChartData{T}(PowerPoint.Chart, Func{T})"/> but hands the activated
+    /// (late-bound Excel) workbook to <paramref name="operation"/>. The workbook is owned and
+    /// released here; the operation must release anything it acquires from it.
+    /// </summary>
+    internal static T WithChartWorkbook<T>(PowerPoint.Chart chart, Func<dynamic, T> operation)
     {
         PowerPoint.ChartData? chartData = null;
         dynamic? workbook = null;
@@ -969,7 +977,7 @@ public sealed class ChartCommands : IChartCommands
         {
             chartData = chart.ChartData;
             workbook = ActivateChartData(chart, chartData);
-            T result = operation();
+            T result = operation(workbook);
             completed = true;
             return result;
         }
@@ -1148,7 +1156,7 @@ public sealed class ChartCommands : IChartCommands
     /// for idempotent read operations immediately following a chart write, where a genuinely
     /// broken COM state still fails after the bounded retry window instead of hanging.
     /// </summary>
-    private static T RetryTransientChartRead<T>(Func<T> read)
+    internal static T RetryTransientChartRead<T>(Func<T> read)
     {
         Exception? lastError = null;
         for (int attempt = 1; attempt <= TransientReadRetryAttempts; attempt++)
