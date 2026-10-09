@@ -3,6 +3,7 @@ extern alias OfficeInterop;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Sbroenne.PowerPointMcp.ComInterop;
+using Sbroenne.PowerPointMcp.Core.Assets;
 using Sbroenne.PowerPointMcp.Core.Chart;
 using Sbroenne.PowerPointMcp.Core.Deck;
 using Sbroenne.PowerPointMcp.Core.Design;
@@ -540,58 +541,8 @@ internal static class SlideRenderer
         }
     }
 
-    private static PowerPoint.Shape CreatePicture(PowerPoint.Shapes shapes, PlannedElement element)
-    {
-        var picture = element.Picture!;
-        var placement = picture.Placement;
-        if (picture.Fit == "contain" || !placement.Cropped)
-        {
-            var frame = placement.Frame;
-            var shape = shapes.AddPicture(picture.Path, Office.MsoTriState.msoFalse, Office.MsoTriState.msoTrue, frame.Left, frame.Top, frame.Width, frame.Height);
-            TagPixels(shape, picture);
-            return shape;
-        }
-
-        var cover = shapes.AddPicture(picture.Path, Office.MsoTriState.msoFalse, Office.MsoTriState.msoTrue, placement.Frame.Left, placement.Frame.Top, placement.PictureWidth, placement.PictureHeight);
-        PowerPoint.PictureFormat? format = null;
-        Office.Crop? crop = null;
-        try
-        {
-            format = cover.PictureFormat;
-            crop = format.Crop;
-            crop.PictureWidth = placement.PictureWidth;
-            crop.PictureHeight = placement.PictureHeight;
-            crop.ShapeLeft = placement.Frame.Left;
-            crop.ShapeTop = placement.Frame.Top;
-            crop.ShapeWidth = placement.Frame.Width;
-            crop.ShapeHeight = placement.Frame.Height;
-            crop.PictureOffsetX = placement.OffsetX;
-            crop.PictureOffsetY = placement.OffsetY;
-        }
-        finally
-        {
-            if (crop is not null) ComUtilities.Release(ref crop);
-            if (format is not null) ComUtilities.Release(ref format);
-        }
-        TagPixels(cover, picture);
-        return cover;
-    }
-
-    private static void TagPixels(PowerPoint.Shape shape, PicturePlan picture)
-    {
-        var tags = shape.Tags;
-        try
-        {
-            tags.Add(DeckRoles.ImagePixelsTag, $"{picture.PixelWidth.ToString(CultureInfo.InvariantCulture)}x{picture.PixelHeight.ToString(CultureInfo.InvariantCulture)}");
-            if (picture.Attribution is not null)
-                tags.Add(DeckRoles.AttributionTag, picture.Attribution);
-            tags.Add("PPTMCP_IMG_SOURCE", picture.Path);
-        }
-        finally
-        {
-            ComUtilities.Release(ref tags);
-        }
-    }
+    private static PowerPoint.Shape CreatePicture(PowerPoint.Shapes shapes, PlannedElement element) =>
+        PicturePlacer.Place(shapes, element.Picture!);
 
     private static PowerPoint.Shape CreateTable(PowerPoint.Shapes shapes, PlannedElement element)
     {

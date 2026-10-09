@@ -94,7 +94,11 @@ public sealed class McpProtocolTests : IAsyncLifetime, IAsyncDisposable
         "batch",
         "batch_read",
         "data",
-        "data_read"
+        "data_read",
+        "design",
+        "design_read",
+        "template",
+        "template_read"
     ];
 
     public McpProtocolTests(ITestOutputHelper output)
@@ -234,7 +238,7 @@ public sealed class McpProtocolTests : IAsyncLifetime, IAsyncDisposable
         var tools = await _client!.ListToolsAsync(cancellationToken: _cts.Token);
         var readTools = tools.Where(tool => tool.Name.EndsWith("_read", StringComparison.Ordinal)).ToArray();
 
-        Assert.Equal(22, readTools.Length);
+        Assert.Equal(24, readTools.Length);
         foreach (var readTool in readTools)
         {
             Assert.True(readTool.ProtocolTool.Annotations?.ReadOnlyHint);

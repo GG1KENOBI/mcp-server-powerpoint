@@ -11,6 +11,7 @@ using Sbroenne.PowerPointMcp.Core.Composition;
 using Sbroenne.PowerPointMcp.Core.CustomShow;
 using Sbroenne.PowerPointMcp.Core.Data;
 using Sbroenne.PowerPointMcp.Core.Deck;
+using Sbroenne.PowerPointMcp.Core.Design;
 using Sbroenne.PowerPointMcp.Core.Diagram;
 using Sbroenne.PowerPointMcp.Core.Export;
 using Sbroenne.PowerPointMcp.Core.Image;
@@ -26,6 +27,7 @@ using Sbroenne.PowerPointMcp.Core.Shape;
 using Sbroenne.PowerPointMcp.Core.Slide;
 using Sbroenne.PowerPointMcp.Core.SmartArt;
 using Sbroenne.PowerPointMcp.Core.Table;
+using Sbroenne.PowerPointMcp.Core.Template;
 using Sbroenne.PowerPointMcp.Core.TextFrame;
 using Sbroenne.PowerPointMcp.Generated;
 using Sbroenne.PowerPointMcp.Service.Rpc;
@@ -81,6 +83,8 @@ public sealed class PowerPointMcpService : IDisposable
     private readonly DiagramCommands _diagramCommands = new();
     private readonly PreviewCommands _previewCommands = new();
     private readonly DataCommands _dataCommands = new();
+    private readonly DesignCommands _designCommands = new();
+    private readonly TemplateCommands _templateCommands = new();
 
     /// <summary>Gets the UTC time this daemon instance started.</summary>
     public DateTime StartTime => _startTime;
@@ -334,6 +338,12 @@ public sealed class PowerPointMcpService : IDisposable
                 "data" => DispatchSimple<DataAction>(action, request,
                     ServiceRegistry.Data.TryParseAction,
                     (a, batch) => ServiceRegistry.Data.DispatchToCore(_dataCommands, a, batch, request.Args)),
+                "design" => DispatchSimple<DesignAction>(action, request,
+                    ServiceRegistry.Design.TryParseAction,
+                    (a, batch) => ServiceRegistry.Design.DispatchToCore(_designCommands, a, batch, request.Args)),
+                "template" => DispatchSimple<TemplateAction>(action, request,
+                    ServiceRegistry.Template.TryParseAction,
+                    (a, batch) => ServiceRegistry.Template.DispatchToCore(_templateCommands, a, batch, request.Args)),
                 "batch" => DispatchSimple<BatchAction>(action, request,
                     ServiceRegistry.Batch.TryParseAction,
                     (a, batch) => ServiceRegistry.Batch.DispatchToCore(new BatchCommands(new ServiceBatchDispatcher(this, request.SessionId!)), a, batch, request.Args)),
