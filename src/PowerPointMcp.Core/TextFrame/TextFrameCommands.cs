@@ -373,12 +373,12 @@ public sealed partial class TextFrameCommands : ITextFrameCommands
             var validation = ValidateIndices(ctx, slideIndex, shapeIndex);
             if (validation is not null) return validation;
 
-            if (!ParagraphAlignments.TryGetValue(alignment, out var alignmentValue))
+            if (!TryParseAlignment(alignment, out var alignmentValue))
             {
                 return new TextFrameOperationResult
                 {
                     Success = false,
-                    ErrorMessage = $"'{alignment}' is not a recognized PpParagraphAlignment name (must be 'ppAlignLeft', 'ppAlignCenter', 'ppAlignRight', 'ppAlignJustify', or 'ppAlignDistribute')."
+                    ErrorMessage = $"'{alignment}' is not a recognized alignment (use left, center, right, justify, or distribute; ppAlign* names are also accepted)."
                 };
             }
 
@@ -515,12 +515,12 @@ public sealed partial class TextFrameCommands : ITextFrameCommands
             var validation = ValidateIndices(ctx, slideIndex, shapeIndex);
             if (validation is not null) return validation;
 
-            if (!AutoSizeModes.TryGetValue(autoSize, out var autoSizeValue))
+            if (!TryParseAutoSize(autoSize, out var autoSizeValue))
             {
                 return new TextFrameOperationResult
                 {
                     Success = false,
-                    ErrorMessage = $"'{autoSize}' is not a recognized PpAutoSize name (must be 'ppAutoSizeNone', 'ppAutoSizeShapeToFitText', or 'ppAutoSizeTextToFitShape')."
+                    ErrorMessage = $"'{autoSize}' is not a recognized autofit mode (use none, shape-to-fit-text, or shrink-on-overflow; ppAutoSize* names are also accepted)."
                 };
             }
 

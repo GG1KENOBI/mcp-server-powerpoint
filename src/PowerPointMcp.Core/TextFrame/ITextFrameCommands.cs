@@ -11,9 +11,9 @@ namespace Sbroenne.PowerPointMcp.Core.TextFrame;
 /// </summary>
 [ServiceCategory("textframe", "TextFrame")]
 [McpTool("textframe", Title = "Text Frame Operations", Destructive = true, Category = "content",
-    Description = "Set, get, find, or replace text and font/paragraph formatting in one shape's text frame. Find/replace use literal PowerPoint matching, with optional case and whole-word matching; they do not search other shapes or slides.")]
+    Description = "Set, get, find, or replace text and font/paragraph formatting in one shape's text frame. get-paragraphs shows paragraphs and formatting runs with 1-based positions; replace-range and format-range edit part of the text (by start/length, the Nth match, or paragraphs) while other runs keep their formatting; set-paragraph-format sets alignment, spacing, indents, bullets, and numbering; set-text-frame sets margins, anchoring, wrap, autofit, orientation, columns, and rotation. For text across many shapes or slides use deck find-text / replace-text.")]
 [McpReadOnlyActions("get-text", "find-text", "get-font-size", "get-bold", "get-font-color",
-    "get-italic", "get-underline", "get-font-name", "get-alignment", "get-bullet", "get-auto-size")]
+    "get-italic", "get-underline", "get-font-name", "get-alignment", "get-bullet", "get-auto-size", "get-paragraphs")]
 public interface ITextFrameCommands
 {
     /// <summary>Sets the text content of a shape's text frame.</summary>
@@ -107,4 +107,144 @@ public interface ITextFrameCommands
 
     /// <summary>Gets a shape's text frame auto-size mode as a <c>PpAutoSize</c> enum member name.</summary>
     TextFrameOperationResult GetAutoSize(IPresentationBatch batch, int slideIndex, int shapeIndex);
+
+    /// <summary>
+    /// Lists the frame's paragraphs (1-based start, length, text, alignment, indent level,
+    /// spacing, indents, bullet or numbering) with their formatting runs (font, size, bold,
+    /// italic, underline, #RRGGBB color, hyperlink, character spacing, baseline offset), plus the
+    /// frame's margins, anchoring, wrap, autofit, orientation, columns, and rotation. Positions
+    /// are what replace-range and format-range take.
+    /// </summary>
+    TextFrameOperationResult GetParagraphs(IPresentationBatch batch, int slideIndex, int shapeIndex);
+
+    /// <summary>
+    /// Replaces part of the text, chosen by start and length, by match and occurrence, or by
+    /// paragraph, without touching the rest. The new text takes the formatting of the first
+    /// replaced character (inserted text, with length 0, takes the formatting of the character it
+    /// is inserted before). A newline in the text starts a new paragraph.
+    /// </summary>
+    /// <param name="text">Text to write; for replace-range an empty text deletes the selected characters and a newline starts a new paragraph.</param>
+    /// <param name="start">1-based first character (from get-paragraphs or find-text); text length + 1 appends.</param>
+    /// <param name="length">Number of characters from start (default: to the end of the text).</param>
+    /// <param name="match">Select an occurrence of this literal text instead of start/length.</param>
+    /// <param name="occurrence">Which occurrence of match (1-based, default 1; -1 for the last).</param>
+    /// <param name="matchCase">Match upper/lower case exactly (default false).</param>
+    /// <param name="paragraph">Select whole paragraphs starting at this 1-based paragraph (default: the whole frame).</param>
+    /// <param name="paragraphCount">Number of paragraphs from paragraph (default 1).</param>
+    TextFrameOperationResult ReplaceRange(
+        IPresentationBatch batch,
+        int slideIndex,
+        int shapeIndex,
+        [AllowEmptyString] string text,
+        int? start = null,
+        int? length = null,
+        string? match = null,
+        int occurrence = 1,
+        bool matchCase = false,
+        int? paragraph = null,
+        int? paragraphCount = null);
+
+    /// <summary>
+    /// Formats part of the text (by start/length, match/occurrence, or paragraph; default the
+    /// whole frame): font, size, bold, italic, underline, #RRGGBB color, hyperlink, character
+    /// spacing, and superscript/subscript offset. Only the options passed change; other runs keep
+    /// their formatting.
+    /// </summary>
+    /// <param name="fontName">Typeface name, e.g. Segoe UI.</param>
+    /// <param name="fontSize">Font size in points.</param>
+    /// <param name="bold">Bold on or off.</param>
+    /// <param name="italic">Italic on or off.</param>
+    /// <param name="underline">Underline on or off.</param>
+    /// <param name="color">Text color as #RRGGBB.</param>
+    /// <param name="hyperlink">Link address (https://..., mailto:..., a file path) or slide:N for another slide; empty removes the link.</param>
+    /// <param name="characterSpacing">Character spacing in points (0 normal, negative condensed, positive expanded).</param>
+    /// <param name="baselineOffset">Baseline offset from -1 to 1 (0.3 superscript, -0.25 subscript, 0 normal).</param>
+    TextFrameOperationResult FormatRange(
+        IPresentationBatch batch,
+        int slideIndex,
+        int shapeIndex,
+        int? start = null,
+        int? length = null,
+        string? match = null,
+        int occurrence = 1,
+        bool matchCase = false,
+        int? paragraph = null,
+        int? paragraphCount = null,
+        string? fontName = null,
+        float? fontSize = null,
+        bool? bold = null,
+        bool? italic = null,
+        bool? underline = null,
+        string? color = null,
+        string? hyperlink = null,
+        float? characterSpacing = null,
+        float? baselineOffset = null);
+
+    /// <summary>
+    /// Sets paragraph formatting for one or more paragraphs (default all): alignment, space
+    /// before/after, line spacing (in lines or points), outline level, left and first-line
+    /// indents, and bullets or numbering. Only the options passed change.
+    /// </summary>
+    /// <param name="alignment">left, center, right, justify, or distribute (ppAlign* names are also accepted).</param>
+    /// <param name="spaceBefore">Space before the paragraph in points.</param>
+    /// <param name="spaceAfter">Space after the paragraph in points.</param>
+    /// <param name="lineSpacing">Line spacing as a multiple of single spacing, e.g. 1.15.</param>
+    /// <param name="lineSpacingPoints">Exact line spacing in points (instead of line_spacing).</param>
+    /// <param name="indentLevel">Outline level 1-9.</param>
+    /// <param name="leftIndent">Left indent in points.</param>
+    /// <param name="firstLineIndent">First-line indent in points; negative makes a hanging indent for bullets.</param>
+    /// <param name="bulletStyle">none, bullet, or numbered.</param>
+    /// <param name="character">Bullet glyph (one character), e.g. • or –.</param>
+    /// <param name="numberStyle">Numbering: arabic-period (1.), arabic-paren (1)), alpha-lower-period (a.), alpha-upper-period (A.), alpha-lower-paren (a)), roman-lower-period (i.), roman-upper-period (I.).</param>
+    /// <param name="startAt">First number for numbered paragraphs.</param>
+    TextFrameOperationResult SetParagraphFormat(
+        IPresentationBatch batch,
+        int slideIndex,
+        int shapeIndex,
+        int? paragraph = null,
+        int? paragraphCount = null,
+        string? alignment = null,
+        float? spaceBefore = null,
+        float? spaceAfter = null,
+        float? lineSpacing = null,
+        float? lineSpacingPoints = null,
+        int? indentLevel = null,
+        float? leftIndent = null,
+        float? firstLineIndent = null,
+        string? bulletStyle = null,
+        string? character = null,
+        string? numberStyle = null,
+        int? startAt = null);
+
+    /// <summary>
+    /// Sets text frame layout: margins, vertical anchoring, word wrap, autofit, text orientation,
+    /// columns, and the shape's rotation. Only the options passed change. Returns the resulting
+    /// layout.
+    /// </summary>
+    /// <param name="marginLeft">Left margin in points.</param>
+    /// <param name="marginTop">Top margin in points.</param>
+    /// <param name="marginRight">Right margin in points.</param>
+    /// <param name="marginBottom">Bottom margin in points.</param>
+    /// <param name="verticalAnchor">top, middle, or bottom.</param>
+    /// <param name="wordWrap">Wrap text inside the shape.</param>
+    /// <param name="autoSize">Autofit: none, shape-to-fit-text, or shrink-on-overflow (ppAutoSize* names are also accepted).</param>
+    /// <param name="orientation">horizontal, up (rotated 270°), down (rotated 90°), or stacked.</param>
+    /// <param name="columnCount">Number of text columns (1-16).</param>
+    /// <param name="columnSpacing">Space between columns in points.</param>
+    /// <param name="rotation">Shape rotation in degrees (0-360).</param>
+    TextFrameOperationResult SetTextFrame(
+        IPresentationBatch batch,
+        int slideIndex,
+        int shapeIndex,
+        float? marginLeft = null,
+        float? marginTop = null,
+        float? marginRight = null,
+        float? marginBottom = null,
+        string? verticalAnchor = null,
+        bool? wordWrap = null,
+        string? autoSize = null,
+        string? orientation = null,
+        int? columnCount = null,
+        float? columnSpacing = null,
+        float? rotation = null);
 }

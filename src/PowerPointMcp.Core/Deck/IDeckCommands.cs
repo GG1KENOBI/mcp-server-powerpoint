@@ -10,8 +10,8 @@ namespace Sbroenne.PowerPointMcp.Core.Deck;
 /// </summary>
 [ServiceCategory("deck", "Deck")]
 [McpTool("deck", Title = "Deck Inspection and Addressing", Destructive = true, Category = "content",
-    Description = "Inspect a whole presentation compactly, list objects with stable ids, find objects by semantic selectors (title, role, kind, text, tag, group, geometry), fingerprint revisions, and assign persistent ids. Selector example: kind:table slide:3, text:\"Q3*\" font<12.")]
-[McpReadOnlyActions("summary", "inspect-objects", "find", "fingerprint")]
+    Description = "Inspect a whole presentation compactly, list objects with stable ids, find objects by semantic selectors (title, role, kind, text, tag, group, geometry), fingerprint revisions, assign persistent ids, and find or replace text across every slide, table cell, and (optionally) speaker notes with a dry-run preview. Selector example: kind:table slide:3, text:\"Q3*\" font<12.")]
+[McpReadOnlyActions("summary", "inspect-objects", "find", "fingerprint", "find-text")]
 public interface IDeckCommands
 {
     /// <summary>
@@ -35,7 +35,7 @@ public interface IDeckCommands
     /// <param name="selector">Optional filter, e.g. "kind:text-box font&lt;12" or "group:Cards".</param>
     /// <param name="detail">compact (default; text shortened to 200 characters) or full (all text, font names, margins, alt text, tags).</param>
     /// <param name="offset">0-based index of the first object to return (default 0).</param>
-    /// <param name="limit">Objects per page (1-200, default 50).</param>
+    /// <param name="limit">Items per page (1-200; inspect-objects default 50, find 20, find-text and replace-text 100).</param>
     DeckOperationResult InspectObjects(
         IPresentationBatch batch,
         int? slideIndex = null,
@@ -70,11 +70,56 @@ public interface IDeckCommands
     /// <param name="selector">Objects to give ids, e.g. "kind:chart" (optional).</param>
     /// <param name="appId">Exact id for the single object the selector matches.</param>
     /// <param name="prefix">Prefix for generated ids (default "id").</param>
-    /// <param name="dryRun">Only return the plan (default false).</param>
+    /// <param name="dryRun">Only return the plan without changing anything (assign-ids default false; replace-text default true).</param>
     DeckOperationResult AssignIds(
         IPresentationBatch batch,
         string? selector = null,
         string? appId = null,
         string prefix = "id",
         bool dryRun = false);
+
+    /// <summary>
+    /// Finds text across the deck: every text frame, group member, and table cell, plus speaker
+    /// notes with include_notes, optionally only inside objects a selector matches. Literal by
+    /// default; use_regex enables .NET regular expressions. A newline in a literal query matches a
+    /// paragraph or line break. Returns each match's slide, shape id, table cell, 1-based
+    /// character position, and surrounding text. Changes nothing.
+    /// </summary>
+    /// <param name="findWhat">Text (or regular expression with use_regex) to find; Cyrillic and other Unicode text match case-insensitively unless match_case.</param>
+    /// <param name="matchCase">Match upper/lower case exactly (default false).</param>
+    /// <param name="wholeWords">Only match whole words (default false).</param>
+    /// <param name="useRegex">Treat find_what as a .NET regular expression; replace_what may use $1 or ${name} (default false).</param>
+    /// <param name="includeNotes">Also search speaker notes (default false).</param>
+    DeckOperationResult FindText(
+        IPresentationBatch batch,
+        [AllowEmptyString] string findWhat,
+        string? selector = null,
+        bool matchCase = false,
+        bool wholeWords = false,
+        bool useRegex = false,
+        bool includeNotes = false,
+        int limit = 100);
+
+    /// <summary>
+    /// Replaces text across the deck (same scope and matching as find-text). A replacement takes
+    /// the formatting of the first character it replaces, so runs elsewhere keep their formatting.
+    /// Dry run by default: the result lists every planned replacement with context; pass
+    /// dry_run=false to apply. With expected_count, nothing changes unless exactly that many
+    /// matches exist. The presentation is changed in memory only; save it under a new name to
+    /// keep the original file.
+    /// </summary>
+    /// <param name="replaceWhat">Replacement text; empty deletes the matches; a newline starts a new paragraph.</param>
+    /// <param name="expectedCount">Refuse to change anything unless the number of matches equals this.</param>
+    DeckOperationResult ReplaceText(
+        IPresentationBatch batch,
+        [AllowEmptyString] string findWhat,
+        [AllowEmptyString] string replaceWhat,
+        string? selector = null,
+        bool matchCase = false,
+        bool wholeWords = false,
+        bool useRegex = false,
+        bool includeNotes = false,
+        bool dryRun = true,
+        int? expectedCount = null,
+        int limit = 100);
 }

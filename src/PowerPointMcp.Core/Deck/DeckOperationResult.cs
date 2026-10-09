@@ -71,6 +71,15 @@ public sealed class DeckOperationResult
     /// <summary>Structural changes, for diff-style results.</summary>
     public IReadOnlyList<DeckChange>? Changes { get; init; }
 
+    /// <summary>Text matches, for find-text and replace-text (paginated by limit).</summary>
+    public IReadOnlyList<DeckTextHit>? TextHits { get; init; }
+
+    /// <summary>Matches replaced (0 for a dry run), for replace-text.</summary>
+    public int? ReplacementCount { get; init; }
+
+    /// <summary>Text frames, table cells, and notes searched, for find-text and replace-text.</summary>
+    public int? TextFramesSearched { get; init; }
+
     /// <summary>Non-fatal notes about what was read or skipped.</summary>
     public IReadOnlyList<string>? Warnings { get; init; }
 }

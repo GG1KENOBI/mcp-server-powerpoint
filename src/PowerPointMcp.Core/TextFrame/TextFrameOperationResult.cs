@@ -55,4 +55,19 @@ public sealed class TextFrameOperationResult
 
     /// <summary>The PpAutoSize name of the text frame's auto-size mode, if applicable.</summary>
     public string? AutoSize { get; init; }
+
+    /// <summary>Paragraphs with paragraph format and runs, for get-paragraphs.</summary>
+    public List<TextParagraphInfo>? Paragraphs { get; init; }
+
+    /// <summary>Text frame layout, for get-paragraphs and set-text-frame.</summary>
+    public TextFrameLayoutInfo? Frame { get; init; }
+
+    /// <summary>1-based first character the edit applied to.</summary>
+    public int? Start { get; init; }
+
+    /// <summary>Characters the edit applied to (for replace-range: the length of the new text).</summary>
+    public int? Length { get; init; }
+
+    /// <summary>Non-fatal notes, such as truncated output.</summary>
+    public List<string>? Warnings { get; init; }
 }
