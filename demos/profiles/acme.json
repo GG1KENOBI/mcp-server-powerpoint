@@ -1,0 +1,11 @@
+{
+  "schema": "pptmcp.design-profile/1",
+  "name": "acme",
+  "version": "2.0.0",
+  "description": "Demo corporate profile: teal primary, Georgia headings, larger body text.",
+  "base": "default",
+  "colors": { "primary": "#00655B", "secondary": "#2A9D8F", "accent": "#E76F51", "surface": "#EEF6F5", "border": "#B8D8D3" },
+  "fonts": { "heading": "Georgia", "body": "Segoe UI" },
+  "type_scale": { "title": 32, "body": 18, "caption": 13 },
+  "components": { "card": { "version": "2", "fill": "surface", "border": "border", "radius": 10 } }
+}

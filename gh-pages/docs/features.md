@@ -1,13 +1,13 @@
 ---
 title: Complete Feature Reference
-description: 32 MCP tools with 215 operations across 17 domains for live PowerPoint automation through single action-dispatch tools.
+description: 53 MCP tools with 305 operations across 27 domains for live PowerPoint automation through single action-dispatch tools.
 keywords: "PowerPoint MCP features, PowerPoint automation, presentation tool, slide tool, shape tool, media tool, chart tool, SmartArt tool, export-to-verify"
 ---
 
 # Complete Feature Reference
 
-PowerPoint MCP Server exposes **32 MCP tools with 215 operations across 17 domains**.
-The tool total includes 15 read-only aliases; the operation total counts each unique action once.
+PowerPoint MCP Server exposes **53 MCP tools with 305 operations across 27 domains**.
+The tool total includes 25 read-only aliases and the session-free `capabilities` tool; the operation total counts each unique action once.
 Every domain is a **single action-dispatch tool** that takes an `action` parameter — for example
 `presentation(action="open", filePath="C:\\Decks\\q4.pptx")` or
 `chart(action="add-chart", presentation_session_id="...", slide_index=2, ...)`.
@@ -24,8 +24,8 @@ The CLI mirrors the same domain model:
 | `presentation` | 20 | Session lifecycle, Save As/copy, templates, advisory Mark as Final, document properties, string tags | `presentation(action="...", ...)` | `pptcli session <action> ...` |
 | `slide` | 26 | Slide lifecycle, visibility, backgrounds, sections, comments, import, string tags | `slide(action="...", presentation_session_id=..., ...)` | `pptcli slide <action> -s <SESSION_ID> ...` |
 | `shape` | 57 | Shapes, free-floating and attached connectors, WordArt, 3D rotation, alignment/distribution, styling, grouping, boolean merging, hyperlinks, linked pictures, placeholders, duplication and cross-slide copying, string tags | `shape(action="...", presentation_session_id=..., ...)` | `pptcli shape <action> -s <SESSION_ID> ...` |
-| `textframe` | 22 | Text content, find/replace, and text formatting | `textframe(action="...", presentation_session_id=..., ...)` | `pptcli textframe <action> -s <SESSION_ID> ...` |
-| `table` | 12 | Table creation and cell editing/formatting | `table(action="...", presentation_session_id=..., ...)` | `pptcli table <action> -s <SESSION_ID> ...` |
+| `textframe` | 27 | Text content, find/replace, and text formatting | `textframe(action="...", presentation_session_id=..., ...)` | `pptcli textframe <action> -s <SESSION_ID> ...` |
+| `table` | 18 | Table creation and cell editing/formatting | `table(action="...", presentation_session_id=..., ...)` | `pptcli table <action> -s <SESSION_ID> ...` |
 | `notes` | 2 | Speaker notes | `notes(action="...", presentation_session_id=..., ...)` | `pptcli notes <action> -s <SESSION_ID> ...` |
 | `layout` | 4 | Slide layouts | `layout(action="...", presentation_session_id=..., ...)` | `pptcli layout <action> -s <SESSION_ID> ...` |
 | `pagesetup` | 5 | Slide size, numbering, footer, date/time | `pagesetup(action="...", presentation_session_id=..., ...)` | `pptcli pagesetup <action> -s <SESSION_ID> ...` |
@@ -34,10 +34,20 @@ The CLI mirrors the same domain model:
 | `animation` | 5 | Shape effects and slide transitions | `animation(action="...", presentation_session_id=..., ...)` | `pptcli animation <action> -s <SESSION_ID> ...` |
 | `image` | 16 | Picture insertion, compression, crop frames, brightness/contrast, recoloring, and transparency | `image(action="...", presentation_session_id=..., ...)` | `pptcli image <action> -s <SESSION_ID> ...` |
 | `media` | 2 | Embedded or linked audio/video insertion and native media metadata | `media(action="...", presentation_session_id=..., ...)` | `pptcli media <action> -s <SESSION_ID> ...` |
-| `chart` | 16 | Native charts, titles, legend, data replacement, styles, colors, data tables | `chart(action="...", presentation_session_id=..., ...)` | `pptcli chart <action> -s <SESSION_ID> ...` |
+| `chart` | 23 | Native charts, titles, legend, data replacement, styles, colors, data tables | `chart(action="...", presentation_session_id=..., ...)` | `pptcli chart <action> -s <SESSION_ID> ...` |
 | `smartart` | 7 | SmartArt diagrams and node editing | `smartart(action="...", presentation_session_id=..., ...)` | `pptcli smartart <action> -s <SESSION_ID> ...` |
 | `export` | 3 | PDF delivery and export-to-verify image rendering | `export(action="...", presentation_session_id=..., ...)` | `pptcli export <action> -s <SESSION_ID> ...` |
 | `customshow` | 3 | Named custom shows: curated, ordered subsets of a presentation's slides | `customshow(action="...", presentation_session_id=..., ...)` | `pptcli customshow <action> -s <SESSION_ID> ...` |
+| `deck` | 7 | Deck summary, object inventory with stable ids, semantic selectors, fingerprints, deck-wide find/replace | `deck(action="...", presentation_session_id=..., ...)` | `pptcli deck <action> -s <SESSION_ID> ...` |
+| `compose` | 5 | Composition specs (14 slide kinds), layout planning, measured fitting, semantic map | `compose(action="...", presentation_session_id=..., ...)` | `pptcli compose <action> -s <SESSION_ID> ...` |
+| `diagram` | 10 | Editable diagrams with glued connectors and node ids | `diagram(action="...", presentation_session_id=..., ...)` | `pptcli diagram <action> -s <SESSION_ID> ...` |
+| `review` | 4 | Validation with evidence, repair plans, safe repair | `review(action="...", presentation_session_id=..., ...)` | `pptcli review <action> -s <SESSION_ID> ...` |
+| `preview` | 4 | Rendered snapshots (image content), wireframes, contact sheets, image diffs | `preview(action="...", presentation_session_id=..., ...)` | `pptcli preview <action> -s <SESSION_ID> ...` |
+| `batch` | 5 | Validated multi-step batches, checkpoints, jobs | `batch(action="...", presentation_session_id=..., ...)` | `pptcli batch <action> -s <SESSION_ID> ...` |
+| `data` | 6 | CSV/XLSX ingestion, bound tables and charts, refresh | `data(action="...", presentation_session_id=..., ...)` | `pptcli data <action> -s <SESSION_ID> ...` |
+| `design` | 12 | Design profiles, apply with migration preview, typography normalization, components | `design(action="...", presentation_session_id=..., ...)` | `pptcli design <action> -s <SESSION_ID> ...` |
+| `template` | 5 | Layouts, slides from layouts filled by role, slide import, template preview | `template(action="...", presentation_session_id=..., ...)` | `pptcli template <action> -s <SESSION_ID> ...` |
+| `asset` | 10 | Local image catalog, picture inspection, placement, replace, alt text, links | `asset(action="...", presentation_session_id=..., ...)` | `pptcli asset <action> -s <SESSION_ID> ...` |
 
 ## Domain reference
 
@@ -125,7 +135,7 @@ naming, alt text, hyperlinks, linked pictures, placeholders, same-slide duplicat
 `set-placeholder-text`, `set-placeholder-image`, `set-tag`, `get-tag`,
 `list-tags`, `delete-tag`
 
-### `textframe` tool (22 operations)
+### `textframe` tool (27 operations)
 
 Use `textframe` for text content and font/paragraph formatting on a shape's text frame.
 `find-text` and `replace-text` perform literal, non-overlapping matching within the selected
@@ -137,7 +147,7 @@ explicit empty string and preserves character formatting outside the matched ran
 `get-underline`, `set-font-name`, `get-font-name`, `set-alignment`, `get-alignment`, `set-bullet`,
 `get-bullet`, `set-auto-size`, `get-auto-size`
 
-### `table` tool (12 operations)
+### `table` tool (18 operations)
 
 Use `table` for native PowerPoint tables.
 
@@ -196,7 +206,7 @@ Use `media` to insert embedded or linked audio/video and inspect PowerPoint's na
 
 **Exact action order:** `add-media`, `get-media-info`
 
-### `chart` tool (16 operations)
+### `chart` tool (23 operations)
 
 Use `chart` for native PowerPoint charts.
 
@@ -232,6 +242,103 @@ need to include every slide.
 | `delete` | Delete a custom show by name. |
 
 **Exact action order:** `list`, `create`, `delete`
+
+### `deck` tool (7 operations)
+
+Use `deck` to understand and address a whole presentation: `summary` (size, sections, theme,
+masters, layouts, one page of slides), `inspect-objects` (ids, kind, role, geometry, text, fonts),
+`find` with selectors such as `kind:table slide:3` or `text:"Q3*" font<12`, `fingerprint`,
+`assign-ids` (persistent `PPTMCP_ID` tags), and `find-text` / `replace-text` across text frames,
+group members, table cells, and optionally notes (literal or regex; replace is a dry run unless
+`dry_run=false`; `expected_count` guards against surprises).
+
+**Exact action order:** `summary`, `inspect-objects`, `find`, `fingerprint`, `assign-ids`,
+`find-text`, `replace-text`
+
+### `compose` tool (5 operations)
+
+Use `compose` to create slides from a validated JSON spec (`pptmcp.composition/1`): title,
+section, bullets, two-column, comparison, cards, KPI, table, chart, image, quote, timeline,
+process, agenda. `plan` shows regions and estimated fit without changing the deck; `create`
+renders, measures text with PowerPoint, shrinks within limits, and splits overflowing content
+across slides.
+
+**Exact action order:** `kinds`, `plan`, `create`, `get-spec`, `update-text`
+
+### `diagram` tool (10 operations)
+
+Use `diagram` for editable flowcharts, swimlanes, matrices, hub-and-spoke, and architecture
+diagrams: native shapes, connectors glued to nodes, `PPTMCP_NODE` ids, and relayout.
+
+**Exact action order:** `types`, `create`, `inspect`, `list`, `update-node`, `add-node`,
+`remove-node`, `add-edge`, `remove-edge`, `relayout`
+
+### `review` tool (4 operations)
+
+Use `review` to validate a deck (overflow, overlap, off-slide, small or missing fonts, contrast,
+distortion, alignment and title consistency, alt text, duplicate ids) with evidence, plan
+repairs, and apply only the safe, planned fixes.
+
+**Exact action order:** `validate`, `plan-repair`, `repair`, `list-rules`
+
+### `preview` tool (4 operations)
+
+Use `preview` to render slides with PowerPoint (PNG returned as MCP image content unless
+`include_image=false` or `PPTMCP_PREVIEW_IMAGES=off`), with a text wireframe that does not need
+image input; build contact sheets and compare two images.
+
+**Exact action order:** `snapshot`, `contact-sheet`, `compare-images`, `clear-cache`
+
+### `batch` tool (5 operations)
+
+Use `batch` for many edits in one validated request: references between steps (`$step.path`),
+prevalidation, optional checkpoint copy, background jobs with status and cancel, and a change log.
+
+**Exact action order:** `validate`, `run`, `start`, `status`, `cancel`
+
+### `data` tool (6 operations)
+
+Use `data` to preview CSV or XLSX files (encoding, delimiter, types, culture), create tables and
+charts bound to the file, and refresh them when the file changes.
+
+**Exact action order:** `preview`, `create-table`, `create-chart`, `bind`, `refresh`, `bindings`
+
+### `design` tool (12 operations)
+
+Use `design` for design profiles (`pptmcp.design-profile/1`): list, get, validate, save, import,
+export, delete, and extract a draft from the open deck. `apply-profile` remaps colors by token,
+migrates fonts and sizes by role, restyles tables and charts, updates the theme, and moves
+components to the profile's versions — previewing every change first. `normalize-typography`
+unifies fonts and sizes against the type scale.
+
+**Exact action order:** `list-profiles`, `get-profile`, `validate-profile`, `save-profile`,
+`import-profile`, `export-profile`, `delete-profile`, `extract-profile`, `apply-profile`,
+`normalize-typography`, `list-components`, `update-components`
+
+### `template` tool (5 operations)
+
+Use `template` with corporate templates: list layouts with placeholders, add slides from a
+layout by name and fill placeholders by role (title, subtitle, body, body2, picture, notes),
+import slides from another deck with a report, and preview a template before applying it.
+
+**Exact action order:** `list-layouts`, `add-slide`, `fill-placeholders`, `import-slides`,
+`preview-template`
+
+### `asset` tool (10 operations)
+
+Use `asset` for local images: a searchable catalog of folders, picture inspection (effective
+PPI, distortion, crop, alt text, linked and broken files), contain/cover placement with a focal
+point (never stretched), replacing a picture in its frame, alt text, decorative flag, and
+attribution, embedding linked pictures, and relinking broken ones. Nothing is downloaded.
+
+**Exact action order:** `scan-folder`, `search`, `tag-asset`, `duplicates`, `inspect`, `place`,
+`replace`, `set-alt-text`, `embed-linked`, `fix-links`
+
+### `capabilities` tool (no session)
+
+Call `capabilities` first when planning: server and installed PowerPoint version, every tool
+with its read-only actions, `PPTMCP_*` settings, composition kinds, diagram types, design
+profiles, and workflow recipes. Actions: `overview`, `tools`, `workflows`, `environment`.
 
 !!! tip "Why export-to-verify matters"
     Because the tools drive a **real PowerPoint desktop instance**, every visual edit can be

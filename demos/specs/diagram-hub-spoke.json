@@ -1,0 +1,28 @@
+{
+  "type": "hub-spoke",
+  "id": "eco",
+  "title": "Partner ecosystem",
+  "hub": "core",
+  "nodes": [
+    {
+      "id": "core",
+      "label": "Platform"
+    },
+    {
+      "id": "p1",
+      "label": "Banks"
+    },
+    {
+      "id": "p2",
+      "label": "Retail"
+    },
+    {
+      "id": "p3",
+      "label": "Logistics"
+    },
+    {
+      "id": "p4",
+      "label": "Government"
+    }
+  ]
+}

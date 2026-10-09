@@ -1,0 +1,8 @@
+{"kind":"executive-summary","id":"long-summary","title":"Findings from the operations review","points":[
+ {"text":"Order intake grew in every region, but fulfilment capacity did not keep pace","detail":"Backlog doubled between March and September; the Kazan warehouse ran above 95% utilisation for eleven consecutive weeks and overtime costs rose by a third"},
+ {"text":"Supplier lead times recovered unevenly","detail":"Electronics suppliers are back to pre-2022 lead times while packaging suppliers remain 40% slower, which forces safety stock that ties up working capital"},
+ {"text":"Customer satisfaction fell for the first time in three years","detail":"Late deliveries explain most of the decline; complaints about product quality are stable and below target in all segments"},
+ {"text":"The new planning system is live in two of five plants","detail":"Plants on the new system plan weekly instead of monthly and cut expediting costs by 18%; the remaining plants migrate in Q1 and Q2"},
+ {"text":"Inventory accuracy improved after cycle counting was introduced","detail":"Accuracy rose from 91% to 98.5%; write-offs fell accordingly and the year-end stocktake can be shortened by two days"},
+ {"text":"Logistics costs per order are flat despite fuel price increases","detail":"Route optimisation and higher load factors offset the fuel effect; further savings require the new regional hub"}],
+ "takeaway":"Approve the capacity investment and the second planning wave"}

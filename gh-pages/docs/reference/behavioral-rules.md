@@ -5,7 +5,7 @@ description: Follow safe PowerPoint automation rules for session ownership, expl
 # Behavioral Rules for PowerPoint MCP Operations
 
 These rules ensure efficient, reliable PowerPoint automation via a live PowerPoint desktop
-instance (COM). AI assistants should follow these guidelines when using the **32 PowerPoint MCP tools across 17 domains**.
+instance (COM). AI assistants should follow these guidelines when using the **53 PowerPoint MCP tools across 27 domains**.
 
 ## Core Execution Rules
 
@@ -41,12 +41,12 @@ Every editing workflow starts by establishing a session:
 
 ## Tool Conventions
 
-- **All 32 MCP tools are action-dispatch tools.** Every call includes an `action` parameter.
+- **All 53 MCP tools are action-dispatch tools.** Every call includes an `action` parameter.
 - **Use `{domain}_read` for read-only actions when available.** These tools expose only explicitly
   reviewed inspection actions; the original domain tools remain available for compatibility.
 - **`presentation` uses `presentation_session_id` plus camelCase lifecycle/property parameters** — `filePath`,
   `targetPath`, `format`, `overwrite`, `templatePath`, `propertyName`, `value`.
-- **The other 31 tools use `presentation_session_id` as well**, with snake_case action parameters, e.g.
+- **The other 52 tools use `presentation_session_id` as well**, with snake_case action parameters, e.g.
   `shape(action: "add-rectangle", presentation_session_id: ..., slide_index: 1, left: 50, top: 80, width: 100,
   height: 60)`.
 

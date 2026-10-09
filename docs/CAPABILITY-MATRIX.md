@@ -1,8 +1,8 @@
 # Capability Matrix — Agent Authoring Platform
 
 Base commit: `cd8af40` (upstream `main`, v0.3.2). Built from the source (Core interfaces, generated
-manifest, `PresentationTools.cs`, service dispatch), not from README counts. Status values are
-filled in by the delivery report (`docs/AUTHORING-PLATFORM.md`).
+manifest, `PresentationTools.cs`, service dispatch), not from README counts. Delivery status is in the
+last section and in the delivery report (`docs/AUTHORING-PLATFORM.md`).
 
 Legend for verification: **U** = unit tests (pure logic, run in CI without PowerPoint),
 **P** = protocol tests (MCP in-memory transport, no PowerPoint), **N** = native tests against real
@@ -49,3 +49,30 @@ Every generated domain is exposed as a write tool and, for read actions, a `<dom
 | 16 | Local UI | None | Loopback viewer over the same service | Optional `--ui` HttpListener on 127.0.0.1 with embedded assets | P (handler logic), D |
 | 17 | COM reliability and offline distribution | STA queue, message filter, owned-process cleanup, untrimmed self-contained publish | Audit notes, offline install docs | Review + docs; no change to working publish settings | D |
 | 18 | Demonstrations | None | Scenario decks and renders | Scripted scenarios (`demos/`) runnable on Windows through the CLI/MCP; results recorded only when executed | D |
+
+## Delivery status
+
+Delivered on `feature/authoring-platform`. **Implemented** means the code is in place and its
+pure logic is unit-tested. **Native** gives the real-PowerPoint tests that were written. None of
+them has been run yet, because the work was done without Windows; see
+[VERIFICATION.md](VERIFICATION.md).
+
+| # | Delivered as | Unit tests (run, pass) | Native tests (written, not run) |
+|---|---|---|---|
+| 3.1–3.5 | `deck` summary, inspect-objects, find (selectors), fingerprint, assign-ids | Deck (21) | DeckCommandsTests (9) |
+| 4 | `compose` with 14 kinds, plan, create, get-spec, update-text | Composition (45) | ComposeCommandsTests (8) |
+| 5 | LayoutEngine, TextEstimator, measured fitting and splitting in the renderer | Composition (included above) | ComposeCommandsTests |
+| 6 | `design` profiles, apply with migration preview, typography, components | Design (6) + Composition profile tests | DesignCommandsTests (5) |
+| 7 | `template` list-layouts, add-slide, fill-placeholders, import-slides, preview-template | Template (5) | TemplateCommandsTests (7) |
+| 8 | `textframe` get-paragraphs, replace-range, format-range, set-paragraph-format, set-text-frame; `deck` find-text and replace-text | Text (14) | RichTextCommandsTests (8) |
+| 9 | `table` and `chart` advanced actions; `data` CSV/XLSX with bound refresh | Data (10) + table parser tests | DataCommandsTests (6) |
+| 10 | `diagram` with five types, glued connectors, edits, relayout | Diagram (11) | DiagramCommandsTests (6) |
+| 11 | `asset` catalog, inspect, place, replace, alt text, embed, fix-links | Assets (16) | AssetCommandsTests (4) |
+| 12 | `preview` snapshot (MCP image content), contact sheet, image diff; `review validate` | Preview (6), Review (45) | PreviewCommandsTests (4), ReviewCommandsTests (7) |
+| 13 | `review` plan-repair and repair | Review (included above) | ReviewCommandsTests |
+| 14 | `batch` validate, run, start, status, cancel; fingerprints, checkpoints | Batch (13) | covered by McpPlatformWorkflowTests and demo 9 |
+| 15 | `capabilities` tool, workflow instructions, lenient arguments | protocol and normalization tests, Assets (capabilities) | McpPlatformWorkflowTests |
+| 16 | Local UI (`PPTMCP_UI=1`) on the shared service | LocalUi (5, real loopback listener) | manual steps in VERIFICATION.md |
+| 17 | Offline bundle, install and verify scripts; COM rules kept | — | VERIFICATION.md step 5 |
+| 18 | Ten demo scenarios with a runner that records results | DemoInputs (5: specs, profile, CSV) | demos/Run-Demos.ps1 |
+

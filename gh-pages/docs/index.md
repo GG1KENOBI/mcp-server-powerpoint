@@ -160,7 +160,7 @@ powerpointmcpserver.dev.
 
 </div>
 
-[See all 32 tools (215 operations) across 17 domains :material-arrow-right:](features.md){ .md-button .md-button--primary }
+[See all 53 tools (305 operations) across 27 domains :material-arrow-right:](features.md){ .md-button .md-button--primary }
 
 ## See it in action
 

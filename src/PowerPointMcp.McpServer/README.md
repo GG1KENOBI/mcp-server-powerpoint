@@ -32,15 +32,15 @@ Desktop, VS Code, GitHub Copilot, etc.) at it over stdio:
 
 ## Capabilities
 
-**32 tools with 215 operations across 17 domains:**
+**53 tools with 305 operations across 27 domains:**
 
 | Tool | Ops | Coverage |
 | --- | --- | --- |
 | `presentation` | 20 | create, open, Save As, Save Copy As, close, list, templates, get/set final, document properties, string tags |
 | `slide` | 26 | slide lifecycle, visibility, backgrounds, sections, comments, import, string tags |
 | `shape` | 57 | shape creation, free-floating and attached connectors, editable WordArt, per-axis 3D rotation, alignment/distribution, styling, grouping, boolean merging, hyperlinks, placeholders, string tags, `copy-formatting`, `duplicate`, `copy-to-slide`, `get-link-info`, `update-link`, `break-link`, `set-link-auto-update` |
-| `textframe` | 22 | text content, find/replace, font formatting, alignment, bullets, auto-size |
-| `table` | 12 | tables, cell text, row/column edits, cell fill/border, merge |
+| `textframe` | 27 | text content, find/replace, font formatting, alignment, bullets, auto-size |
+| `table` | 18 | tables, cell text, row/column edits, cell fill/border, merge |
 | `notes` | 2 | set/get speaker notes |
 | `layout` | 4 | set/get slide layout |
 | `pagesetup` | 5 | slide size, numbering, footer, date/time |
@@ -49,10 +49,20 @@ Desktop, VS Code, GitHub Copilot, etc.) at it over stdio:
 | `animation` | 5 | shape effects, transition read/write |
 | `image` | 16 | add picture, brightness/contrast, recolor, crop |
 | `media` | 2 | add embedded/linked audio or video, get native media info |
-| `chart` | 16 | charts, series, titles, legend, data replacement, styles, colors, data tables |
+| `chart` | 23 | charts, series, titles, legend, data replacement, styles, colors, data tables |
 | `smartart` | 7 | SmartArt insertion and node editing |
 | `export` | 3 | export to PDF or images |
 | `customshow` | 3 | named custom shows: curated, ordered subsets of a presentation's slides |
+| `deck` | 7 | deck summary, object inventory, selectors, fingerprints, persistent ids, deck-wide find/replace |
+| `compose` | 5 | composition specs (14 kinds), layout planning, measured fitting, semantic map |
+| `diagram` | 10 | editable diagrams with glued connectors, node ids, relayout |
+| `review` | 4 | validation with evidence, repair plans, safe repair |
+| `preview` | 4 | rendered snapshots, wireframes, contact sheets, image diffs |
+| `batch` | 5 | validated batches with references, checkpoints, jobs |
+| `data` | 6 | CSV/XLSX preview, bound tables and charts, refresh |
+| `design` | 12 | design profiles, apply with migration preview, typography, components |
+| `template` | 5 | layouts, slides from layouts, fill by role, import with report, template preview |
+| `asset` | 10 | local image catalog, picture inspection, placement, replace, alt text, links |
 
 Every domain is exposed as a single **action-dispatch tool** taking an `action`
 parameter — including `presentation`. Example MCP calls:

@@ -1,0 +1,56 @@
+{
+  "type": "architecture",
+  "id": "arch",
+  "title": "Solution architecture",
+  "layers": [
+    "Channels",
+    "Services",
+    "Data"
+  ],
+  "nodes": [
+    {
+      "id": "web",
+      "label": "Web app",
+      "layer": "Channels"
+    },
+    {
+      "id": "mobile",
+      "label": "Mobile app",
+      "layer": "Channels"
+    },
+    {
+      "id": "api",
+      "label": "API gateway",
+      "layer": "Services"
+    },
+    {
+      "id": "orders",
+      "label": "Order service",
+      "layer": "Services"
+    },
+    {
+      "id": "db",
+      "label": "PostgreSQL",
+      "layer": "Data",
+      "shape": "database"
+    }
+  ],
+  "edges": [
+    {
+      "from": "web",
+      "to": "api"
+    },
+    {
+      "from": "mobile",
+      "to": "api"
+    },
+    {
+      "from": "api",
+      "to": "orders"
+    },
+    {
+      "from": "orders",
+      "to": "db"
+    }
+  ]
+}

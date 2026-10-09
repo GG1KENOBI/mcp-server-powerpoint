@@ -4,7 +4,7 @@ description: Follow the PowerPoint automation workflow from opening one session 
 
 # Canonical Workflow: Start Session → Build → Verify → Save and Close
 
-The standard end-to-end loop for every PowerPoint MCP task. All 32 tools and 215 operations exist
+The standard end-to-end loop for every PowerPoint MCP task. All 53 tools and 305 operations exist
 to support this loop for one of two starting points: a brand-new deck or an existing file.
 
 ## Starting Point A — New Presentation

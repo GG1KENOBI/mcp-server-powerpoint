@@ -16,7 +16,12 @@ Inspect the existing deck first. Keep its useful content and structure unless th
 more. Use a consistent theme, readable type, strong contrast, clear hierarchy, and layouts that
 fit each slide's content. Prefer editable PowerPoint elements over flattened screenshots.
 
-Make changes in the user's session, then review exported slide images for clipping, overlap,
-alignment, and legibility. Check key slides at presentation size and fix visible problems before
+With the PowerPoint MCP server, start from the deck's own style (`design get-profile
+profile=theme`) or a saved profile, build slides with `compose` or the deck's layouts with
+`template add-slide`, and keep styling consistent with `design apply-profile` and
+`design normalize-typography` (both preview their changes first).
+
+Make changes in the user's session, then run `review validate` and review rendered slides
+(`preview snapshot` or exported images) for clipping, overlap, alignment, and legibility. Check key slides at presentation size and fix visible problems before
 saving. Follow the
 [deck-building guide](https://powerpointmcpserver.dev/reference/deck-builder/) for detailed guidance.

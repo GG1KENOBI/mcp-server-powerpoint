@@ -42,11 +42,22 @@ layout regressions that text-only automation simply cannot detect.
 > **Also automating spreadsheets?** Check out [Excel MCP Server](https://excelmcpserver.dev/) —
 > the sister project, built the same way.
 
+## 🧱 Authoring platform
+
+High-level authoring tools sit on top of the per-object tools. They include whole-deck inspection with stable ids and
+selectors, slide compositions with measured fitting, editable diagrams, CSV/XLSX-bound tables and charts, design
+profiles with migration previews, template workflows, deck-wide find/replace, validation and safe repair, rendered
+previews, batches with checkpoints, a local image catalog, a session-free `capabilities` tool, and an optional
+loopback review UI. Everything runs offline against desktop PowerPoint. See the
+[authoring platform guide](docs/AUTHORING-PLATFORM.md), [offline installation](docs/OFFLINE-INSTALL.md),
+[client configuration](docs/CLIENT-CONFIGURATION.md), [verification status](docs/VERIFICATION.md), and the
+[demo scenarios](demos/README.md).
+
 ## 🎯 What You Can Do
 
-**32 MCP tools with 215 operations across 17 domains:**
+**53 MCP tools with 305 operations across 27 domains:**
 
-The tool total includes 15 read-only aliases; the operation total counts each unique action once.
+The tool total includes 25 read-only aliases and the session-free `capabilities` tool; the operation total counts each unique action once.
 
 - 🗂️ **Presentation** (20 ops) — create, open, Save As, Save Copy As, close, list sessions, apply a
   `.potx`/`.pptx` template's masters/theme/layouts, read the current theme name, set/read
@@ -55,8 +66,8 @@ The tool total includes 15 read-only aliases; the operation total counts each un
 - 📑 **Slide** (26 ops) — lifecycle, visibility, backgrounds, sections, comments, slide import, and string tags
 - ▭ **Shape** (57 ops) — shapes, free-floating and attached connectors, WordArt, 3D rotation, alignment/distribution, styling, grouping, merging, duplication and cross-slide copying, hyperlinks, linked assets, placeholder editing,
   and string tags
-- ✏️ **TextFrame** (22 ops) — text, find/replace, font size/name/color, bold, italic, underline, alignment, bullets
-- 📊 **Table** (12 ops) — add, cell text, insert/delete rows &amp; columns, cell fill/border, merge cells
+- ✏️ **TextFrame** (27 ops) — text, find/replace, paragraphs and runs, range replace/format that keeps formatting, paragraph format, margins, columns, hyperlinks, font size/name/color, bold, italic, underline, alignment, bullets
+- 📊 **Table** (18 ops) — add, cell text, bulk data, insert/delete rows &amp; columns, cell fill/border, merge cells, styles, column widths, number formats, conditional formatting
 - 🗣️ **Notes** (2 ops) — set/get speaker notes
 - 🖼️ **Layout** (4 ops) — set/get slide layout
 - 📐 **Page Setup** (5 ops) — slide size, first slide number, footer, date/time, slide numbers
@@ -64,12 +75,22 @@ The tool total includes 15 read-only aliases; the operation total counts each un
 - 🎭 **Master** (12 ops) — theme color/font inspection, slide master title/body placeholder fonts, background color
 - 🎬 **Animation** (5 ops) — shape entrance/emphasis/exit effects, slide transitions
 - 🖼️ **Image** (16 ops) — insert, adjust, crop, set transparency, and compress pictures
-- 📈 **Chart** (16 ops) — add chart, multi-series data, titles, legend, built-in styles, color styles,
+- 📈 **Chart** (23 ops) — add chart, multi-series data, titles, legend, built-in styles, color styles,
   and data tables
 - 🎧 **Media** (2 ops) — insert embedded or linked audio/video and inspect native media metadata
 - 🔀 **SmartArt** (7 ops) — insert and edit SmartArt diagrams
 - 🖼️ **Export** (3 ops) — export to PDF or images for delivery and visual verification
 - 🎬 **Custom Shows** (3 ops) — named custom shows: curated, ordered slide subsets for reusing one deck with different audiences
+- 🧭 **Deck** (7 ops) — whole-deck summary, object inventory with stable ids, semantic selectors, revision fingerprints, persistent ids, and deck-wide find/replace with dry-run preview (tables, groups, speaker notes, regex)
+- 🧩 **Compose** (5 ops) — validated composition specs (14 slide kinds) planned with a layout engine, measured fitting, overflow splitting, and an editable semantic map
+- 🔀 **Diagram** (10 ops) — flowcharts, swimlanes, matrices, hub-and-spoke, and architecture diagrams with glued connectors, node ids, and relayout
+- 🔎 **Review** (4 ops) — validation (overflow, overlap, off-slide, contrast, fonts, distortion, consistency) with evidence, repair plans, and safe repair
+- 👁️ **Preview** (4 ops) — PowerPoint-rendered slide snapshots, text wireframes, contact sheets, and image diffs
+- 📦 **Batch** (5 ops) — validated multi-step batches with references, checkpoints, background jobs, and change logs
+- 📥 **Data** (6 ops) — CSV/XLSX preview, bound tables and charts, and refresh after the file changes
+- 🎨 **Design** (12 ops) — design profiles (save, import, export, extract from a deck), apply with migration preview, typography normalization, and versioned components
+- 🗂️ **Template** (5 ops) — layouts with placeholders, slides from layouts filled by role, slide import with a report, and template preview
+- 🖼️ **Asset** (10 ops) — local image catalog and search, picture inspection (PPI, distortion, alt text, links), contain/cover placement, replace in frame, alt text and attribution, embed and relink
 
 Every domain is exposed as a single **action-dispatch tool** (e.g. `shape`, `table`, `chart`,
 `presentation`) with an `action` parameter selecting the specific operation — keeping the tool

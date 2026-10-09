@@ -1,0 +1,14 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "powerpoint": {
+      "type": "local",
+      "command": ["C:\\Users\\YOU\\AppData\\Local\\Programs\\PowerPointMcp\\mcp\\mcp-powerpoint.exe"],
+      "enabled": true,
+      "environment": {
+        "PPTMCP_LENIENT_ARGUMENTS": "1",
+        "PPTMCP_PREVIEW_IMAGES": "off"
+      }
+    }
+  }
+}

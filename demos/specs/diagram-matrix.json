@@ -1,0 +1,30 @@
+{
+  "type": "matrix",
+  "id": "prio",
+  "title": "Prioritisation",
+  "x_axis": "Effort",
+  "y_axis": "Impact",
+  "quadrants": {
+    "tl": "Quick wins",
+    "tr": "Big bets",
+    "bl": "Fill-ins",
+    "br": "Avoid"
+  },
+  "nodes": [
+    {
+      "id": "a",
+      "label": "Self-service portal",
+      "quadrant": "tl"
+    },
+    {
+      "id": "b",
+      "label": "New ERP",
+      "quadrant": "tr"
+    },
+    {
+      "id": "c",
+      "label": "Logo refresh",
+      "quadrant": "bl"
+    }
+  ]
+}

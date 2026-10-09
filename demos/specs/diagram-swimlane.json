@@ -1,0 +1,46 @@
+{
+  "type": "swimlane",
+  "id": "order",
+  "title": "Order to cash",
+  "lanes": [
+    "Customer",
+    "Sales",
+    "Finance"
+  ],
+  "nodes": [
+    {
+      "id": "po",
+      "label": "Place order",
+      "lane": "Customer"
+    },
+    {
+      "id": "confirm",
+      "label": "Confirm order",
+      "lane": "Sales"
+    },
+    {
+      "id": "invoice",
+      "label": "Send invoice",
+      "lane": "Finance"
+    },
+    {
+      "id": "pay",
+      "label": "Pay",
+      "lane": "Customer"
+    }
+  ],
+  "edges": [
+    {
+      "from": "po",
+      "to": "confirm"
+    },
+    {
+      "from": "confirm",
+      "to": "invoice"
+    },
+    {
+      "from": "invoice",
+      "to": "pay"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "type": "flowchart",
+  "id": "approval",
+  "title": "Approval flow",
+  "nodes": [
+    {
+      "id": "start",
+      "label": "Request",
+      "shape": "terminator"
+    },
+    {
+      "id": "check",
+      "label": "Budget < 10k?",
+      "shape": "decision"
+    },
+    {
+      "id": "auto",
+      "label": "Auto-approve"
+    },
+    {
+      "id": "cfo",
+      "label": "CFO review"
+    },
+    {
+      "id": "done",
+      "label": "Done",
+      "shape": "terminator"
+    }
+  ],
+  "edges": [
+    {
+      "from": "start",
+      "to": "check"
+    },
+    {
+      "from": "check",
+      "to": "auto",
+      "label": "yes"
+    },
+    {
+      "from": "check",
+      "to": "cfo",
+      "label": "no"
+    },
+    {
+      "from": "auto",
+      "to": "done"
+    },
+    {
+      "from": "cfo",
+      "to": "done"
+    }
+  ]
+}

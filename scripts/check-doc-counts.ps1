@@ -100,6 +100,15 @@ $script:domainOpCounts = @{ presentation = $presentationOps }
 $canonicalToolNames = [System.Collections.Generic.HashSet[string]]::new(
     [System.StringComparer]::Ordinal)
 [void]$canonicalToolNames.Add('presentation')
+# capabilities is the second hand-written tool: session-free discovery, not a PowerPoint domain.
+$capabilitiesToolPath = Join-Path $RepoRoot 'src\PowerPointMcp.McpServer\Tools\CapabilitiesTool.cs'
+$capabilitiesContent = Get-Content -LiteralPath $capabilitiesToolPath -Raw
+$capabilitiesEnum = [regex]::Match($capabilitiesContent, '(?s)public enum CapabilitiesAction\s*\{(?<body>.*?)\n\}')
+if (-not $capabilitiesEnum.Success) {
+    throw 'Could not locate the CapabilitiesAction enum body.'
+}
+$capabilitiesOps = @([regex]::Matches($capabilitiesEnum.Groups['body'].Value, 'JsonStringEnumMemberName\("(?<name>[a-z-]+)"\)')).Count
+[void]$canonicalToolNames.Add('capabilities')
 foreach ($command in $manifest.commands) {
     $actionCount = @($command.actions).Count
     if ($actionCount -eq 0) {
@@ -131,11 +140,11 @@ foreach ($interfaceFile in Get-ChildItem -LiteralPath $coreInterfacesPath -Recur
 }
 
 $canonicalTools = $canonicalToolNames.Count
-$canonicalOperations = $manifestOps + $presentationOps
+$canonicalOperations = $manifestOps + $presentationOps + $capabilitiesOps
 $canonicalDomains = $manifestTools + 1
 
 # The generated manifest supplies the original generated tools; read-only aliases are declared
-# on their Core interfaces, and presentation is hand-written. The protocol test verifies that
+# on their Core interfaces, and presentation and capabilities are hand-written. The protocol test verifies that
 # this expected set is the live tools/list surface.
 $protocolTestsPath = Join-Path $RepoRoot 'tests\PowerPointMcp.McpServer.Tests\Integration\McpProtocolTests.cs'
 $protocolTestsContent = Get-Content -LiteralPath $protocolTestsPath -Raw
@@ -165,7 +174,7 @@ if (@($handWrittenToolNames).Count -ne 1 -or $handWrittenToolNames[0] -cne 'pres
 }
 
 Write-Host "Canonical (from code): $canonicalTools tools, $canonicalOperations operations, $canonicalDomains domains" -ForegroundColor Cyan
-Write-Host "  generated manifest: $manifestTools tools / $manifestOps operations; read-only MCP aliases: $readOnlyAliasCount; hand-written presentation: $presentationOps operations; protocol surface: $($expectedToolNames.Count) tools" -ForegroundColor DarkGray
+Write-Host "  generated manifest: $manifestTools tools / $manifestOps operations; read-only MCP aliases: $readOnlyAliasCount; hand-written presentation: $presentationOps operations, capabilities: $capabilitiesOps; protocol surface: $($expectedToolNames.Count) tools" -ForegroundColor DarkGray
 
 $script:counts = @{
     t = $canonicalTools
