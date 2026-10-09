@@ -18,6 +18,7 @@ using Sbroenne.PowerPointMcp.Core.Media;
 using Sbroenne.PowerPointMcp.Core.Notes;
 using Sbroenne.PowerPointMcp.Core.PageSetup;
 using Sbroenne.PowerPointMcp.Core.Presentation;
+using Sbroenne.PowerPointMcp.Core.Preview;
 using Sbroenne.PowerPointMcp.Core.Review;
 using Sbroenne.PowerPointMcp.Core.Shape;
 using Sbroenne.PowerPointMcp.Core.Slide;
@@ -76,6 +77,7 @@ public sealed class PowerPointMcpService : IDisposable
     private readonly ReviewCommands _reviewCommands = new();
     private readonly ComposeCommands _composeCommands = new();
     private readonly DiagramCommands _diagramCommands = new();
+    private readonly PreviewCommands _previewCommands = new();
 
     /// <summary>Gets the UTC time this daemon instance started.</summary>
     public DateTime StartTime => _startTime;
@@ -323,6 +325,9 @@ public sealed class PowerPointMcpService : IDisposable
                 "diagram" => DispatchSimple<DiagramAction>(action, request,
                     ServiceRegistry.Diagram.TryParseAction,
                     (a, batch) => ServiceRegistry.Diagram.DispatchToCore(_diagramCommands, a, batch, request.Args)),
+                "preview" => DispatchSimple<PreviewAction>(action, request,
+                    ServiceRegistry.Preview.TryParseAction,
+                    (a, batch) => ServiceRegistry.Preview.DispatchToCore(_previewCommands, a, batch, request.Args)),
                 _ => new ServiceResponse { Success = false, ErrorMessage = $"Unknown command category: {category}" }
             };
 
@@ -926,12 +931,24 @@ public sealed class PowerPointMcpService : IDisposable
 
         try
         {
-            return WrapResult(dispatch(action, batch));
+            var response = WrapResult(dispatch(action, batch));
+            MarkChangedUnlessReadOnly(request.Command, batch);
+            return response;
         }
         catch (Exception ex)
         {
+            // A failed mutating command may still have changed the presentation part-way.
+            MarkChangedUnlessReadOnly(request.Command, batch);
             return CreateErrorResponse(ex, request.Command, request.SessionId);
         }
+    }
+
+    /// <summary>Invalidates cached previews of the session after any command that can change the presentation.</summary>
+    private static void MarkChangedUnlessReadOnly(string command, IPresentationBatch batch)
+    {
+        var parts = command.Split('.', 2);
+        if (parts.Length == 2 && !Sbroenne.PowerPointMcp.Core.Catalog.CommandCatalog.IsReadOnly(parts[0], parts[1]))
+            PreviewCache.MarkChanged(batch);
     }
 
     private static ServiceResponse AttachRequestContext(ServiceRequest request, ServiceResponse response)

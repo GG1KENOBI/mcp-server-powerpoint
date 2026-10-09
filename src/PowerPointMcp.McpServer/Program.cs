@@ -173,7 +173,11 @@ public class Program
                     """;
             })
             .WithToolsFromAssembly()
-            .WithRequestFilters(filters => filters.AddCallToolFilter(ToolArgumentFilter.Wrap));
+            .WithRequestFilters(filters =>
+            {
+                filters.AddCallToolFilter(ToolArgumentFilter.Wrap);
+                filters.AddCallToolFilter(ImageContentFilter.Wrap);
+            });
 
         if (testInputPipe != null && testOutputPipe != null)
         {

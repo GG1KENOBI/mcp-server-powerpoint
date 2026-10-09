@@ -88,7 +88,9 @@ public sealed class McpProtocolTests : IAsyncLifetime, IAsyncDisposable
         "compose",
         "compose_read",
         "diagram",
-        "diagram_read"
+        "diagram_read",
+        "preview",
+        "preview_read"
     ];
 
     public McpProtocolTests(ITestOutputHelper output)
@@ -228,7 +230,7 @@ public sealed class McpProtocolTests : IAsyncLifetime, IAsyncDisposable
         var tools = await _client!.ListToolsAsync(cancellationToken: _cts.Token);
         var readTools = tools.Where(tool => tool.Name.EndsWith("_read", StringComparison.Ordinal)).ToArray();
 
-        Assert.Equal(19, readTools.Length);
+        Assert.Equal(20, readTools.Length);
         foreach (var readTool in readTools)
         {
             Assert.True(readTool.ProtocolTool.Annotations?.ReadOnlyHint);
