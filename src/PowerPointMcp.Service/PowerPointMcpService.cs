@@ -5,6 +5,7 @@ using System.Text.Json;
 using Sbroenne.PowerPointMcp.ComInterop.Session;
 using Sbroenne.PowerPointMcp.Core.Accessibility;
 using Sbroenne.PowerPointMcp.Core.Animation;
+using Sbroenne.PowerPointMcp.Core.Assets;
 using Sbroenne.PowerPointMcp.Core.Batch;
 using Sbroenne.PowerPointMcp.Core.Chart;
 using Sbroenne.PowerPointMcp.Core.Composition;
@@ -85,6 +86,7 @@ public sealed class PowerPointMcpService : IDisposable
     private readonly DataCommands _dataCommands = new();
     private readonly DesignCommands _designCommands = new();
     private readonly TemplateCommands _templateCommands = new();
+    private readonly AssetCommands _assetCommands = new();
 
     /// <summary>Gets the UTC time this daemon instance started.</summary>
     public DateTime StartTime => _startTime;
@@ -344,6 +346,9 @@ public sealed class PowerPointMcpService : IDisposable
                 "template" => DispatchSimple<TemplateAction>(action, request,
                     ServiceRegistry.Template.TryParseAction,
                     (a, batch) => ServiceRegistry.Template.DispatchToCore(_templateCommands, a, batch, request.Args)),
+                "asset" => DispatchSimple<AssetAction>(action, request,
+                    ServiceRegistry.Asset.TryParseAction,
+                    (a, batch) => ServiceRegistry.Asset.DispatchToCore(_assetCommands, a, batch, request.Args)),
                 "batch" => DispatchSimple<BatchAction>(action, request,
                     ServiceRegistry.Batch.TryParseAction,
                     (a, batch) => ServiceRegistry.Batch.DispatchToCore(new BatchCommands(new ServiceBatchDispatcher(this, request.SessionId!)), a, batch, request.Args)),

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PowerPoint MCP Review</title>
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <header>
+    <h1>PowerPoint MCP Review</h1>
+    <label>Presentation
+      <select id="session"><option value="">(no open presentation)</option></select>
+    </label>
+    <button id="refresh" type="button">Refresh</button>
+    <span id="status" role="status" aria-live="polite"></span>
+  </header>
+  <nav role="tablist" aria-label="Views">
+    <button role="tab" data-view="slides" aria-selected="true">Slides</button>
+    <button role="tab" data-view="review" aria-selected="false">Review</button>
+    <button role="tab" data-view="pictures" aria-selected="false">Pictures</button>
+    <button role="tab" data-view="design" aria-selected="false">Design</button>
+    <button role="tab" data-view="about" aria-selected="false">Capabilities</button>
+  </nav>
+  <main>
+    <section id="slides" class="view">
+      <p class="hint">Slides of the open presentation. Select a row to render it with PowerPoint (read-only).</p>
+      <table id="slide-table"><thead><tr><th>#</th><th>Title</th><th>Layout</th><th>Shapes</th><th>Hidden</th><th>Notes</th></tr></thead><tbody></tbody></table>
+      <figure id="preview" hidden><img alt=""><figcaption></figcaption></figure>
+      <pre id="sketch" hidden></pre>
+    </section>
+    <section id="review" class="view" hidden>
+      <p class="hint">Layout, text, accessibility, and consistency findings (review validate).</p>
+      <table id="finding-table"><thead><tr><th>Slide</th><th>Severity</th><th>Rule</th><th>Message</th><th>Suggestion</th></tr></thead><tbody></tbody></table>
+    </section>
+    <section id="pictures" class="view" hidden>
+      <p class="hint">Pictures with resolution, distortion, alt text, and link checks (asset inspect).</p>
+      <table id="picture-table"><thead><tr><th>Slide</th><th>Name</th><th>PPI</th><th>Alt text</th><th>Issues</th></tr></thead><tbody></tbody></table>
+    </section>
+    <section id="design" class="view" hidden>
+      <p class="hint">Design profiles and component instances (design list-profiles, list-components).</p>
+      <h2>Profiles</h2>
+      <table id="profile-table"><thead><tr><th>Name</th><th>Source</th><th>Version</th><th>Description</th></tr></thead><tbody></tbody></table>
+      <h2>Components (theme profile)</h2>
+      <table id="component-table"><thead><tr><th>Component</th><th>Profile version</th><th>Instances</th><th>Outdated</th><th>Slides</th></tr></thead><tbody></tbody></table>
+    </section>
+    <section id="about" class="view" hidden>
+      <dl id="about-list"></dl>
+      <h2>Workflows</h2>
+      <ol id="workflow-list"></ol>
+    </section>
+  </main>
+  <footer>Read-only view on this computer only. Edits happen through the agent or the CLI.</footer>
+  <script src="/app.js"></script>
+</body>
+</html>

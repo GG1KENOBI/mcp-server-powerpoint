@@ -32,4 +32,9 @@
     <PackageReference Include="StreamJsonRpc" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Local review UI assets are embedded so nothing is loaded from a CDN or the file system. -->
+    <EmbeddedResource Include="LocalUi\wwwroot\*" LogicalName="LocalUi/%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

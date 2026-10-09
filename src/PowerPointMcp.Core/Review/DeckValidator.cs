@@ -325,7 +325,7 @@ public static class DeckValidator
         }
         context.Add("missing-alt-text", "warning", slide, [item],
             $"{Describe(item)} has no alternative text.",
-            "Describe it with shape set-alt-text, or mark it decorative with shape set-tag PPTMCP_DECORATIVE=1.",
+            "Describe it with asset set-alt-text, or mark it decorative with asset set-alt-text decorative=true.",
             null, autoRepairable: false);
     }
 

@@ -200,6 +200,11 @@ public class Program
 
         var runToken = testShutdownCts?.Token ?? CancellationToken.None;
 
+        // Optional loopback review UI (PPTMCP_UI=1), backed by the same in-process service.
+        using var localUi = testInputPipe == null
+            ? Sbroenne.PowerPointMcp.Service.LocalUi.LocalUiServer.StartFromEnvironment(service, message => Console.Error.WriteLine(message))
+            : null;
+
         var stdinMonitor = testInputPipe == null
             ? StdinPipeMonitor.Start(host.Services.GetRequiredService<IHostApplicationLifetime>())
             : null;

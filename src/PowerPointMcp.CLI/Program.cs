@@ -134,6 +134,7 @@ public static class Program
             PresentationSessionRegistry.PowerPointProcessIdentityTracked += tracker.RecordPowerPointProcess;
 
             var service = new PowerPointMcpService();
+            using var localUi = Sbroenne.PowerPointMcp.Service.LocalUi.LocalUiServer.StartFromEnvironment(service, message => Console.Error.WriteLine(message));
 
             Console.CancelKeyPress += (_, e) =>
             {

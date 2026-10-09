@@ -282,7 +282,7 @@ public sealed class McpToolCallNormalizationTests : IAsyncLifetime, IAsyncDispos
         var checkedActions = 0;
         foreach (var tool in await _client!.ListToolsAsync(cancellationToken: _cts.Token))
         {
-            if (tool.Name == "presentation" || tool.Name.EndsWith("_read", StringComparison.Ordinal))
+            if (tool.Name is "presentation" or "capabilities" || tool.Name.EndsWith("_read", StringComparison.Ordinal))
                 continue;
 
             var metadata = ToolCallNormalizer.GetMetadata(tool.ProtocolTool);
