@@ -98,4 +98,54 @@ public interface ITableCommands
     /// merged cell. The two cells must be adjacent (in the same row or column).
     /// </summary>
     TableOperationResult MergeCells(IPresentationBatch batch, int slideIndex, int shapeIndex, int row, int column, int mergeToRow, int mergeToColumn);
+
+    /// <summary>
+    /// Styles an existing table with a design profile's table style (header fill and text, banded
+    /// rows, total row, font, padding, borders) without changing any cell text.
+    /// </summary>
+    /// <param name="profile">Design profile (default theme).</param>
+    /// <param name="headerRow">Style row 1 as a header (default true).</param>
+    /// <param name="totalRow">Style the last row as a total (default false).</param>
+    /// <param name="banded">Alternate body row fills (default true).</param>
+    /// <param name="fontSize">Text size in points (apply-style default: the profile's table size).</param>
+    TableOperationResult ApplyStyle(IPresentationBatch batch, int slideIndex, int shapeIndex, string? profile = null, bool headerRow = true, bool totalRow = false,
+        bool banded = true, float? fontSize = null);
+
+    /// <summary>Sets column widths in points, or as relative weights that fill the table's current width.</summary>
+    /// <param name="widths">One value per column.</param>
+    /// <param name="mode">points (default) or weights.</param>
+    TableOperationResult SetColumnWidths(IPresentationBatch batch, int slideIndex, int shapeIndex, IReadOnlyList<double> widths, string mode = "points");
+
+    /// <summary>
+    /// Re-formats the numbers in one column with an Excel number format (e.g. #,##0.0, 0%, "$"0.0"M").
+    /// Cell text is parsed with the culture; cells that are not numbers are left unchanged and
+    /// listed. Formatting of the text runs is kept.
+    /// </summary>
+    /// <param name="format">Excel number format code.</param>
+    /// <param name="culture">Culture for parsing and output separators: invariant (default), ru-RU, en-US, ...</param>
+    /// <param name="firstRow">First row (1-based); format-numbers and conditional-format default to 2, below the header.</param>
+    TableOperationResult FormatNumbers(IPresentationBatch batch, int slideIndex, int shapeIndex, int column, string format, string culture = "invariant", int firstRow = 2);
+
+    /// <summary>
+    /// Highlights cells in one column by rule: negative, positive, above, below, equals (with
+    /// threshold), top or bottom (with count). Non-numeric cells are skipped and listed.
+    /// </summary>
+    /// <param name="rule">negative, positive, above, below, equals, top, or bottom.</param>
+    /// <param name="threshold">Comparison value for above, below, equals.</param>
+    /// <param name="count">How many cells for top and bottom (default 3).</param>
+    /// <param name="textColor">#RRGGBB text color.</param>
+    /// <param name="fillColor">#RRGGBB cell fill.</param>
+    /// <param name="bold">Bold text.</param>
+    TableOperationResult ConditionalFormat(IPresentationBatch batch, int slideIndex, int shapeIndex, int column, string rule, double? threshold = null, int count = 3,
+        string? textColor = null, string? fillColor = null, bool? bold = null, string culture = "invariant", int firstRow = 2);
+
+    /// <summary>Styles a block of cells: fill, text color, bold, size, horizontal and vertical alignment, and padding.</summary>
+    /// <param name="lastRow">Last row of the block (inclusive).</param>
+    /// <param name="firstColumn">First column of the block.</param>
+    /// <param name="lastColumn">Last column of the block (inclusive).</param>
+    /// <param name="align">left, center, or right.</param>
+    /// <param name="verticalAlign">top, middle, or bottom.</param>
+    /// <param name="padding">Cell padding in points on all sides.</param>
+    TableOperationResult SetRangeStyle(IPresentationBatch batch, int slideIndex, int shapeIndex, int firstRow, int lastRow, int firstColumn, int lastColumn,
+        string? fillColor = null, string? textColor = null, bool? bold = null, float? fontSize = null, string? align = null, string? verticalAlign = null, float? padding = null);
 }

@@ -43,4 +43,10 @@ public sealed class ChartOperationResult
 
     /// <summary>Whether the chart's data table is currently visible.</summary>
     public bool? HasDataTable { get; init; }
+
+    /// <summary>Chart type, series, categories, axes, and labels, for get-details.</summary>
+    public ChartDetails? Details { get; init; }
+
+    /// <summary>Notes about settings that do not apply to this chart type.</summary>
+    public IReadOnlyList<string>? Warnings { get; init; }
 }

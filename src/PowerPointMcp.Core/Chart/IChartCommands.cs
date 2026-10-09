@@ -10,7 +10,7 @@ namespace Sbroenne.PowerPointMcp.Core.Chart;
 [McpTool("chart", Title = "Chart Operations", Destructive = true, Category = "content",
     Description = "Add a native chart shape, edit data, titles, legend, built-in style, color style, and data-table visibility in an open presentation session.")]
 [McpReadOnlyActions("get-chart-data", "get-chart-title", "get-axis-title", "get-legend-visibility",
-    "get-style", "get-color-style", "get-data-table")]
+    "get-style", "get-color-style", "get-data-table", "get-details")]
 public interface IChartCommands
 {
     /// <summary>
@@ -110,4 +110,59 @@ public interface IChartCommands
     /// <summary>Shows or hides the chart's data table and returns its resulting visibility.</summary>
     /// <param name="visible">True to show the chart element; false to hide it.</param>
     ChartOperationResult SetDataTable(IPresentationBatch batch, int slideIndex, int shapeIndex, bool visible);
+
+    /// <summary>
+    /// Replaces the chart's data through its embedded workbook (still editable with Edit Data):
+    /// categories plus one list of values per series, series-major. Empty strings or "null" are
+    /// missing values; anything that is not a number is rejected (nothing is converted). The
+    /// chart, its type, and its formatting are kept.
+    /// </summary>
+    /// <param name="valueTexts">Values as text, series-major (categories x series), invariant culture ("1.5"); "" or "null" for missing.</param>
+    /// <param name="numberFormat">Excel number format for the data and labels, e.g. 0.0 or 0%.</param>
+    ChartOperationResult SetData(IPresentationBatch batch, int slideIndex, int shapeIndex, IReadOnlyList<string> categories, IReadOnlyList<string> seriesNames,
+        IReadOnlyList<string> valueTexts, string? numberFormat = null);
+
+    /// <summary>Sets axis bounds, unit, number format, title, log scale, and gridlines. Unset values are left as they are.</summary>
+    /// <param name="axis">value (default), category, or secondary-value.</param>
+    /// <param name="minimum">Axis minimum.</param>
+    /// <param name="maximum">Axis maximum.</param>
+    /// <param name="majorUnit">Distance between major ticks.</param>
+    /// <param name="axisTitle">Axis title ("" removes it).</param>
+    /// <param name="logScale">Logarithmic scale (value axes only).</param>
+    /// <param name="gridlines">Show major gridlines.</param>
+    /// <param name="autoScale">Reset minimum, maximum, and unit to automatic.</param>
+    ChartOperationResult SetAxis(IPresentationBatch batch, int slideIndex, int shapeIndex, string axis = "value", double? minimum = null, double? maximum = null,
+        double? majorUnit = null, string? numberFormat = null, [AllowEmptyString] string? axisTitle = null, bool? logScale = null, bool? gridlines = null, bool autoScale = false);
+
+    /// <summary>Shows or hides data labels for all series or one series, with number format and position.</summary>
+    /// <param name="visible">Show labels.</param>
+    /// <param name="seriesIndex">1-based series (default: all series).</param>
+    /// <param name="position">outside-end, inside-end, center, inside-base, above, below, left, right, or best-fit (depends on chart type).</param>
+    /// <param name="showPercent">Show percentages (pie and doughnut).</param>
+    ChartOperationResult SetDataLabels(IPresentationBatch batch, int slideIndex, int shapeIndex, bool visible, int? seriesIndex = null, string? numberFormat = null,
+        string? position = null, bool? showPercent = null);
+
+    /// <summary>
+    /// Styles one series: color, its own chart type (combo charts, e.g. line over columns), the
+    /// secondary value axis, line width, markers, and plot order.
+    /// </summary>
+    /// <param name="color">#RRGGBB.</param>
+    /// <param name="seriesType">column, bar, line, or area for this series only.</param>
+    /// <param name="secondaryAxis">Plot on the secondary value axis.</param>
+    /// <param name="lineWidth">Line width in points (line series).</param>
+    /// <param name="markers">Show markers (line series).</param>
+    /// <param name="plotOrder">1-based position among the series.</param>
+    ChartOperationResult SetSeriesStyle(IPresentationBatch batch, int slideIndex, int shapeIndex, int seriesIndex, string? color = null, string? seriesType = null,
+        bool? secondaryAxis = null, float? lineWidth = null, bool? markers = null, int? plotOrder = null);
+
+    /// <summary>How empty cells plot: gap (default PowerPoint behaviour), zero, or connect (lines bridge the gap).</summary>
+    /// <param name="mode">gap, zero, or connect.</param>
+    ChartOperationResult SetMissingValues(IPresentationBatch batch, int slideIndex, int shapeIndex, string mode);
+
+    /// <summary>Applies a design profile's chart style: series palette, font, legend, gridlines, data labels.</summary>
+    /// <param name="profile">Design profile (default theme).</param>
+    ChartOperationResult ApplyStyle(IPresentationBatch batch, int slideIndex, int shapeIndex, string? profile = null);
+
+    /// <summary>Returns chart type, categories, series (name, values, type, axis, color), axes, labels, and the missing-value mode.</summary>
+    ChartOperationResult GetDetails(IPresentationBatch batch, int slideIndex, int shapeIndex);
 }

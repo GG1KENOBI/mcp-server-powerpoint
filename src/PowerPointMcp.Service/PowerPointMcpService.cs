@@ -9,6 +9,7 @@ using Sbroenne.PowerPointMcp.Core.Batch;
 using Sbroenne.PowerPointMcp.Core.Chart;
 using Sbroenne.PowerPointMcp.Core.Composition;
 using Sbroenne.PowerPointMcp.Core.CustomShow;
+using Sbroenne.PowerPointMcp.Core.Data;
 using Sbroenne.PowerPointMcp.Core.Deck;
 using Sbroenne.PowerPointMcp.Core.Diagram;
 using Sbroenne.PowerPointMcp.Core.Export;
@@ -79,6 +80,7 @@ public sealed class PowerPointMcpService : IDisposable
     private readonly ComposeCommands _composeCommands = new();
     private readonly DiagramCommands _diagramCommands = new();
     private readonly PreviewCommands _previewCommands = new();
+    private readonly DataCommands _dataCommands = new();
 
     /// <summary>Gets the UTC time this daemon instance started.</summary>
     public DateTime StartTime => _startTime;
@@ -329,6 +331,9 @@ public sealed class PowerPointMcpService : IDisposable
                 "preview" => DispatchSimple<PreviewAction>(action, request,
                     ServiceRegistry.Preview.TryParseAction,
                     (a, batch) => ServiceRegistry.Preview.DispatchToCore(_previewCommands, a, batch, request.Args)),
+                "data" => DispatchSimple<DataAction>(action, request,
+                    ServiceRegistry.Data.TryParseAction,
+                    (a, batch) => ServiceRegistry.Data.DispatchToCore(_dataCommands, a, batch, request.Args)),
                 "batch" => DispatchSimple<BatchAction>(action, request,
                     ServiceRegistry.Batch.TryParseAction,
                     (a, batch) => ServiceRegistry.Batch.DispatchToCore(new BatchCommands(new ServiceBatchDispatcher(this, request.SessionId!)), a, batch, request.Args)),

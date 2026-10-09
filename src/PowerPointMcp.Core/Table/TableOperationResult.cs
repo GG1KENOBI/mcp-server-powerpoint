@@ -43,4 +43,13 @@ public sealed class TableOperationResult
 
     /// <summary>Number of cells written by set-data.</summary>
     public int? CellsWritten { get; init; }
+
+    /// <summary>Cells changed by format-numbers, conditional-format, or set-range-style.</summary>
+    public int? CellsChanged { get; init; }
+
+    /// <summary>Cells that could not be parsed as numbers (left unchanged), as "R2C3: text".</summary>
+    public IReadOnlyList<string>? Skipped { get; init; }
+
+    /// <summary>Non-fatal notes.</summary>
+    public IReadOnlyList<string>? Warnings { get; init; }
 }

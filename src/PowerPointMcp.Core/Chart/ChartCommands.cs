@@ -6,7 +6,7 @@ using PowerPoint = Microsoft.Office.Interop.PowerPoint;
 namespace Sbroenne.PowerPointMcp.Core.Chart;
 
 /// <inheritdoc cref="IChartCommands"/>
-public sealed class ChartCommands : IChartCommands
+public sealed partial class ChartCommands : IChartCommands
 {
     // Shapes.AddChart2's XlChartType parameter is defined in the Excel object model
     // (Microsoft.Office.Interop.Excel), which this project deliberately does not reference

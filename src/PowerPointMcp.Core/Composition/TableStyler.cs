@@ -2,6 +2,7 @@ extern alias OfficeInterop;
 
 using Sbroenne.PowerPointMcp.ComInterop;
 using Sbroenne.PowerPointMcp.Core.Chart;
+using Sbroenne.PowerPointMcp.Core.Design;
 using Office = OfficeInterop::Microsoft.Office.Core;
 using PowerPoint = Microsoft.Office.Interop.PowerPoint;
 
@@ -67,7 +68,7 @@ internal static class TableStyler
         }
     }
 
-    private static void StyleCell(PowerPoint.Table table, int row, int column, string text, TablePlan plan, string fill, string color, bool bold, string align, bool isHeader)
+    private static void StyleCell(PowerPoint.Table table, int row, int column, string? text, TablePlan plan, string fill, string color, bool bold, string? align, bool isHeader)
     {
         PowerPoint.Cell? cell = null;
         PowerPoint.Shape? shape = null;
@@ -98,20 +99,24 @@ internal static class TableStyler
             frame.MarginBottom = plan.Style.CellPadding;
             frame.VerticalAnchor = Office.MsoVerticalAnchor.msoAnchorMiddle;
             range = frame.TextRange;
-            range.Text = text.Replace("\r\n", "\v", StringComparison.Ordinal).Replace('\n', '\v');
+            if (text is not null)
+                range.Text = text.Replace("\r\n", "\v", StringComparison.Ordinal).Replace('\n', '\v');
             font = range.Font;
             font.Name = plan.Font;
             font.Size = plan.FontSize;
             font.Bold = bold ? Office.MsoTriState.msoTrue : Office.MsoTriState.msoFalse;
             fontColor = font.Color;
             fontColor.RGB = ChartStyler.Bgr(color);
-            paragraph = range.ParagraphFormat;
-            paragraph.Alignment = align switch
+            if (align is not null)
             {
-                "right" => PowerPoint.PpParagraphAlignment.ppAlignRight,
-                "center" => PowerPoint.PpParagraphAlignment.ppAlignCenter,
-                _ => PowerPoint.PpParagraphAlignment.ppAlignLeft,
-            };
+                paragraph = range.ParagraphFormat;
+                paragraph.Alignment = align switch
+                {
+                    "right" => PowerPoint.PpParagraphAlignment.ppAlignRight,
+                    "center" => PowerPoint.PpParagraphAlignment.ppAlignCenter,
+                    _ => PowerPoint.PpParagraphAlignment.ppAlignLeft,
+                };
+            }
 
             borders = cell.Borders;
             bottom = borders[PowerPoint.PpBorderType.ppBorderBottom];
@@ -141,6 +146,41 @@ internal static class TableStyler
             if (fillFormat is not null) ComUtilities.Release(ref fillFormat);
             if (shape is not null) ComUtilities.Release(ref shape);
             if (cell is not null) ComUtilities.Release(ref cell);
+        }
+    }
+
+    /// <summary>
+    /// Applies a profile table style to an existing table without changing any text: header,
+    /// banded body, total row, fonts, padding, and bottom borders. Alignment is kept unless given.
+    /// </summary>
+    internal static void StyleExisting(PowerPoint.Table table, ResolvedTable style, string font, float fontSize, bool headerRow, bool totalRow, bool banded, IReadOnlyList<string>? align)
+    {
+        PowerPoint.Rows? rows = null;
+        PowerPoint.Columns? columns = null;
+        int rowCount, columnCount;
+        try
+        {
+            rows = table.Rows;
+            columns = table.Columns;
+            rowCount = rows.Count;
+            columnCount = columns.Count;
+        }
+        finally
+        {
+            if (columns is not null) ComUtilities.Release(ref columns);
+            if (rows is not null) ComUtilities.Release(ref rows);
+        }
+        table.ApplyStyle(NoStyleNoGrid, false);
+        var plan = new TablePlan([], [], [], [], totalRow, [], fontSize, font, style, 1);
+        for (int row = 1; row <= rowCount; row++)
+        {
+            bool isHeader = headerRow && row == 1;
+            bool isTotal = totalRow && row == rowCount && rowCount > 1;
+            int bodyIndex = row - (headerRow ? 1 : 0);
+            var fill = isHeader ? style.HeaderFill : isTotal ? style.TotalFill : banded && style.BandFill is not null && bodyIndex % 2 == 0 ? style.BandFill : style.BodyFill;
+            var color = isHeader ? style.HeaderText : style.BodyText;
+            for (int column = 1; column <= columnCount; column++)
+                StyleCell(table, row, column, null, plan, fill, color, isHeader || isTotal, align is { } a && column <= a.Count ? a[column - 1] : null, isHeader);
         }
     }
 

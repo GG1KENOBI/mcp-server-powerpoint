@@ -5,7 +5,7 @@ using PowerPoint = Microsoft.Office.Interop.PowerPoint;
 namespace Sbroenne.PowerPointMcp.Core.Table;
 
 /// <inheritdoc cref="ITableCommands"/>
-public sealed class TableCommands : ITableCommands
+public sealed partial class TableCommands : ITableCommands
 {
     private const int MsoTrue = -1;
     private const int MsoFalse = 0;
