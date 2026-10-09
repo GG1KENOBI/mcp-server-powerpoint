@@ -16,6 +16,7 @@ using Sbroenne.PowerPointMcp.Core.Media;
 using Sbroenne.PowerPointMcp.Core.Notes;
 using Sbroenne.PowerPointMcp.Core.PageSetup;
 using Sbroenne.PowerPointMcp.Core.Presentation;
+using Sbroenne.PowerPointMcp.Core.Review;
 using Sbroenne.PowerPointMcp.Core.Shape;
 using Sbroenne.PowerPointMcp.Core.Slide;
 using Sbroenne.PowerPointMcp.Core.SmartArt;
@@ -70,6 +71,7 @@ public sealed class PowerPointMcpService : IDisposable
     private readonly MediaCommands _mediaCommands = new();
     private readonly CustomShowCommands _customShowCommands = new();
     private readonly DeckCommands _deckCommands = new();
+    private readonly ReviewCommands _reviewCommands = new();
 
     /// <summary>Gets the UTC time this daemon instance started.</summary>
     public DateTime StartTime => _startTime;
@@ -308,6 +310,9 @@ public sealed class PowerPointMcpService : IDisposable
                 "deck" => DispatchSimple<DeckAction>(action, request,
                     ServiceRegistry.Deck.TryParseAction,
                     (a, batch) => ServiceRegistry.Deck.DispatchToCore(_deckCommands, a, batch, request.Args)),
+                "review" => DispatchSimple<ReviewAction>(action, request,
+                    ServiceRegistry.Review.TryParseAction,
+                    (a, batch) => ServiceRegistry.Review.DispatchToCore(_reviewCommands, a, batch, request.Args)),
                 _ => new ServiceResponse { Success = false, ErrorMessage = $"Unknown command category: {category}" }
             };
 

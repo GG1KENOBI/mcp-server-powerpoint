@@ -1,6 +1,8 @@
 extern alias OfficeInterop;
 
+using System.Globalization;
 using Sbroenne.PowerPointMcp.ComInterop;
+using Sbroenne.PowerPointMcp.Core.Assets;
 using Office = OfficeInterop::Microsoft.Office.Core;
 using PowerPoint = Microsoft.Office.Interop.PowerPoint;
 
@@ -51,6 +53,7 @@ internal static class DeckSnapshotReader
                 AppId = tags.GetValueOrDefault(DeckRoles.IdTag),
                 Tags = tags,
                 Fingerprint = fingerprint,
+                BackgroundColor = ReadBackgroundColor(slide),
             };
         }
         finally
@@ -268,6 +271,12 @@ internal static class DeckSnapshotReader
         var text = ReadText(shape, detailed);
         var (rows, columns) = ReadTableSize(shape);
         var (begin, end) = isConnector ? ReadConnections(shape) : (null, null);
+        bool isPicture = type is Office.MsoShapeType.msoPicture or Office.MsoShapeType.msoLinkedPicture;
+        string? linkSource = type is Office.MsoShapeType.msoLinkedPicture or Office.MsoShapeType.msoMedia ? ReadLinkSource(shape) : null;
+        bool? linkExists = linkSource is null ? null : LinkExists(linkSource);
+        var tableText = rows is { } rowCount && columns is { } columnCount
+            ? ReadTableText(shape, rowCount, columnCount, detailed ? 4000 : CompactTextLimit)
+            : null;
         return new DeckObjectInfo
         {
             SlideIndex = slideIndex,
@@ -289,8 +298,8 @@ internal static class DeckSnapshotReader
             Rotation = shape.Rotation,
             ZOrder = shapeIndex is null ? 0 : shape.ZOrderPosition,
             Visible = shape.Visible == Office.MsoTriState.msoTrue,
-            HasText = text.Text is not null,
-            Text = text.Text,
+            HasText = text.Text is not null || tableText is not null,
+            Text = text.Text ?? tableText,
             ParagraphCount = text.ParagraphCount,
             MinFontSize = text.MinFontSize,
             MaxFontSize = text.MaxFontSize,
@@ -303,10 +312,16 @@ internal static class DeckSnapshotReader
             TableRows = rows,
             TableColumns = columns,
             ChartType = ReadChartType(shape),
-            LinkSource = type == Office.MsoShapeType.msoLinkedPicture ? ReadLinkSource(shape) : null,
+            LinkSource = linkSource,
+            LinkSourceExists = linkExists,
             ConnectorBeginShapeId = begin,
             ConnectorEndShapeId = end,
             AltText = detailed ? shape.AlternativeText : null,
+            FillColor = type is Office.MsoShapeType.msoAutoShape or Office.MsoShapeType.msoTextBox or Office.MsoShapeType.msoPlaceholder
+                or Office.MsoShapeType.msoCallout or Office.MsoShapeType.msoFreeform ? ReadFillColor(shape) : null,
+            TextColor = text.Color,
+            Crop = isPicture ? ReadCrop(shape) : null,
+            SourcePixelSize = isPicture ? ReadSourcePixelSize(tags, linkExists == true ? linkSource : null) : null,
             Tags = detailed ? tags : null,
         };
     }
@@ -537,7 +552,8 @@ internal static class DeckSnapshotReader
         string? AutoSize,
         bool? WordWrap,
         IReadOnlyList<float>? Bounds,
-        IReadOnlyList<float>? Margins);
+        IReadOnlyList<float>? Margins,
+        string? Color);
 
     private static TextSnapshot ReadText(PowerPoint.Shape shape, bool detailed)
     {
@@ -571,7 +587,8 @@ internal static class DeckSnapshotReader
                 AutoSizeName(frame2.AutoSize),
                 frame.WordWrap == Office.MsoTriState.msoTrue,
                 [range.BoundLeft, range.BoundTop, range.BoundWidth, range.BoundHeight],
-                detailed ? [frame.MarginLeft, frame.MarginTop, frame.MarginRight, frame.MarginBottom] : null);
+                detailed ? [frame.MarginLeft, frame.MarginTop, frame.MarginRight, frame.MarginBottom] : null,
+                ReadFirstCharacterColor(range));
         }
         finally
         {
@@ -619,6 +636,169 @@ internal static class DeckSnapshotReader
         finally
         {
             if (allRuns is not null) ComUtilities.Release(ref allRuns);
+        }
+    }
+
+    /// <summary>Formats a COM RGB value (0x00BBGGRR) as #RRGGBB.</summary>
+    internal static string Hex(int bgr) =>
+        string.Create(CultureInfo.InvariantCulture, $"#{bgr & 0xFF:X2}{(bgr >> 8) & 0xFF:X2}{(bgr >> 16) & 0xFF:X2}");
+
+    private static string? ReadFirstCharacterColor(PowerPoint.TextRange range)
+    {
+        PowerPoint.TextRange? first = null;
+        PowerPoint.Font? font = null;
+        PowerPoint.ColorFormat? color = null;
+        try
+        {
+            first = range.Characters(1, 1);
+            font = first.Font;
+            color = font.Color;
+            return color.Type == Office.MsoColorType.msoColorTypeMixed ? null : Hex(color.RGB);
+        }
+        finally
+        {
+            if (color is not null) ComUtilities.Release(ref color);
+            if (font is not null) ComUtilities.Release(ref font);
+            if (first is not null) ComUtilities.Release(ref first);
+        }
+    }
+
+    private static string? ReadFillColor(PowerPoint.Shape shape)
+    {
+        PowerPoint.FillFormat? fill = null;
+        PowerPoint.ColorFormat? color = null;
+        try
+        {
+            fill = shape.Fill;
+            if (fill.Visible != Office.MsoTriState.msoTrue || fill.Type != Office.MsoFillType.msoFillSolid || fill.Transparency > 0.5f)
+                return null;
+            color = fill.ForeColor;
+            return Hex(color.RGB);
+        }
+        finally
+        {
+            if (color is not null) ComUtilities.Release(ref color);
+            if (fill is not null) ComUtilities.Release(ref fill);
+        }
+    }
+
+    private static string? ReadBackgroundColor(PowerPoint.Slide slide)
+    {
+        PowerPoint.ShapeRange? background = null;
+        PowerPoint.FillFormat? fill = null;
+        PowerPoint.ColorFormat? color = null;
+        try
+        {
+            background = slide.Background;
+            fill = background.Fill;
+            if (fill.Type != Office.MsoFillType.msoFillSolid)
+                return null;
+            color = fill.ForeColor;
+            return Hex(color.RGB);
+        }
+        finally
+        {
+            if (color is not null) ComUtilities.Release(ref color);
+            if (fill is not null) ComUtilities.Release(ref fill);
+            if (background is not null) ComUtilities.Release(ref background);
+        }
+    }
+
+    private static IReadOnlyList<float>? ReadCrop(PowerPoint.Shape shape)
+    {
+        PowerPoint.PictureFormat? picture = null;
+        try
+        {
+            picture = shape.PictureFormat;
+            return [picture.CropLeft, picture.CropTop, picture.CropRight, picture.CropBottom];
+        }
+        finally
+        {
+            if (picture is not null) ComUtilities.Release(ref picture);
+        }
+    }
+
+    /// <summary>Parses the PPTMCP_IMG_PX tag ("1920x1080") or reads the linked file header.</summary>
+    internal static IReadOnlyList<int>? ReadSourcePixelSize(IReadOnlyDictionary<string, string> tags, string? linkedFile)
+    {
+        if (tags.TryGetValue(DeckRoles.ImagePixelsTag, out var value) && ParsePixelSize(value) is { } tagged)
+            return tagged;
+        if (linkedFile is not null && ImageHeaderReader.ReadFile(linkedFile) is { } info)
+            return [info.DisplayWidth, info.DisplayHeight];
+        return null;
+    }
+
+    /// <summary>Parses "WIDTHxHEIGHT"; null when malformed.</summary>
+    public static IReadOnlyList<int>? ParsePixelSize(string? value)
+    {
+        var parts = value?.Split('x', 'X');
+        return parts is { Length: 2 } &&
+            int.TryParse(parts[0], NumberStyles.None, CultureInfo.InvariantCulture, out var width) &&
+            int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out var height) &&
+            width > 0 && height > 0
+            ? [width, height]
+            : null;
+    }
+
+    private static bool LinkExists(string source)
+    {
+        if (Uri.TryCreate(source, UriKind.Absolute, out var uri) && !uri.IsFile)
+            return true; // Web links are not checked: the server never goes online.
+        try
+        {
+            return File.Exists(source);
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+    }
+
+    private static string? ReadTableText(PowerPoint.Shape shape, int rows, int columns, int limit)
+    {
+        PowerPoint.Table? table = null;
+        try
+        {
+            table = shape.Table;
+            var builder = new System.Text.StringBuilder();
+            for (int row = 1; row <= rows && builder.Length < limit; row++)
+            {
+                if (row > 1) builder.Append('\n');
+                for (int column = 1; column <= columns; column++)
+                {
+                    if (column > 1) builder.Append(" | ");
+                    builder.Append(ReadCellText(table, row, column));
+                }
+            }
+            var text = builder.ToString();
+            return string.IsNullOrWhiteSpace(text.Replace("|", "", StringComparison.Ordinal)) ? null : Shorten(text, limit, out _);
+        }
+        finally
+        {
+            if (table is not null) ComUtilities.Release(ref table);
+        }
+    }
+
+    internal static string ReadCellText(PowerPoint.Table table, int row, int column)
+    {
+        PowerPoint.Cell? cell = null;
+        PowerPoint.Shape? cellShape = null;
+        PowerPoint.TextFrame? frame = null;
+        PowerPoint.TextRange? range = null;
+        try
+        {
+            cell = table.Cell(row, column);
+            cellShape = cell.Shape;
+            frame = cellShape.TextFrame;
+            range = frame.TextRange;
+            return range.Text.Replace('\r', ' ').Replace('\v', ' ');
+        }
+        finally
+        {
+            if (range is not null) ComUtilities.Release(ref range);
+            if (frame is not null) ComUtilities.Release(ref frame);
+            if (cellShape is not null) ComUtilities.Release(ref cellShape);
+            if (cell is not null) ComUtilities.Release(ref cell);
         }
     }
 

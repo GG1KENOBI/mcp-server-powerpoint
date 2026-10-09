@@ -18,6 +18,15 @@ public static class DeckRoles
     /// <summary>Tag holding a diagram node identifier.</summary>
     public const string NodeTag = "PPTMCP_NODE";
 
+    /// <summary>Tag holding the source image pixel size as "WIDTHxHEIGHT", written when a picture is placed.</summary>
+    public const string ImagePixelsTag = "PPTMCP_IMG_PX";
+
+    /// <summary>Tag holding image attribution or source text.</summary>
+    public const string AttributionTag = "PPTMCP_ATTRIBUTION";
+
+    /// <summary>Tag marking an object whose overlap with others is intentional ("1").</summary>
+    public const string AllowOverlapTag = "PPTMCP_ALLOW_OVERLAP";
+
     /// <summary>Maps a native PpPlaceholderType member name to a role.</summary>
     public static string? FromPlaceholder(string? placeholderType) => placeholderType switch
     {

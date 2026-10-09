@@ -41,4 +41,7 @@ public sealed class DeckSlideInfo
 
     /// <summary>Content fingerprint of the slide; changes whenever its objects or text change.</summary>
     public string? Fingerprint { get; init; }
+
+    /// <summary>Solid background color as #RRGGBB when the slide background is a solid fill.</summary>
+    public string? BackgroundColor { get; init; }
 }

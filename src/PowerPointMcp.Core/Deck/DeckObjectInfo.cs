@@ -132,6 +132,24 @@ public sealed class DeckObjectInfo
     /// <summary>Alternative text.</summary>
     public string? AltText { get; init; }
 
+    /// <summary>Solid fill color as #RRGGBB when the fill is visible, solid, and mostly opaque.</summary>
+    public string? FillColor { get; init; }
+
+    /// <summary>Color of the first text character as #RRGGBB.</summary>
+    public string? TextColor { get; init; }
+
+    /// <summary>Picture crop in points (left, top, right, bottom), for pictures.</summary>
+    public IReadOnlyList<float>? Crop { get; init; }
+
+    /// <summary>
+    /// Pixel size of the picture's source image (width, height) when known: from the
+    /// PPTMCP_IMG_PX tag written when the picture was placed, or from a linked file's header.
+    /// </summary>
+    public IReadOnlyList<int>? SourcePixelSize { get; init; }
+
+    /// <summary>Whether a linked source file exists on this computer, for linked pictures and media.</summary>
+    public bool? LinkSourceExists { get; init; }
+
     /// <summary>All string tags (detailed mode).</summary>
     public IReadOnlyDictionary<string, string>? Tags { get; init; }
 }
