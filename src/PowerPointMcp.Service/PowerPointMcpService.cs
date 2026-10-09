@@ -5,6 +5,7 @@ using System.Text.Json;
 using Sbroenne.PowerPointMcp.ComInterop.Session;
 using Sbroenne.PowerPointMcp.Core.Accessibility;
 using Sbroenne.PowerPointMcp.Core.Animation;
+using Sbroenne.PowerPointMcp.Core.Batch;
 using Sbroenne.PowerPointMcp.Core.Chart;
 using Sbroenne.PowerPointMcp.Core.Composition;
 using Sbroenne.PowerPointMcp.Core.CustomShow;
@@ -328,6 +329,9 @@ public sealed class PowerPointMcpService : IDisposable
                 "preview" => DispatchSimple<PreviewAction>(action, request,
                     ServiceRegistry.Preview.TryParseAction,
                     (a, batch) => ServiceRegistry.Preview.DispatchToCore(_previewCommands, a, batch, request.Args)),
+                "batch" => DispatchSimple<BatchAction>(action, request,
+                    ServiceRegistry.Batch.TryParseAction,
+                    (a, batch) => ServiceRegistry.Batch.DispatchToCore(new BatchCommands(new ServiceBatchDispatcher(this, request.SessionId!)), a, batch, request.Args)),
                 _ => new ServiceResponse { Success = false, ErrorMessage = $"Unknown command category: {category}" }
             };
 
@@ -929,6 +933,16 @@ public sealed class PowerPointMcpService : IDisposable
             return new ServiceResponse { Success = false, ErrorMessage = $"Session '{request.SessionId}' not found" };
         }
 
+        if (BatchJobs.RunningIn(batch) is { } job && !IsFromJob(request, job) && !CanRunDuringBatch(request.Command))
+        {
+            return new ServiceResponse
+            {
+                Success = false,
+                ErrorCategory = "SessionBusy",
+                ErrorMessage = $"Batch job {job.Id} is changing this presentation ({job.Completed}/{job.Steps.Count} operations done). Read-only actions still work; wait for it with batch status or stop it with batch cancel.",
+            };
+        }
+
         try
         {
             var response = WrapResult(dispatch(action, batch));
@@ -940,6 +954,33 @@ public sealed class PowerPointMcpService : IDisposable
             // A failed mutating command may still have changed the presentation part-way.
             MarkChangedUnlessReadOnly(request.Command, batch);
             return CreateErrorResponse(ex, request.Command, request.SessionId);
+        }
+    }
+
+    private static bool IsFromJob(ServiceRequest request, BatchJob job) =>
+        string.Equals(request.Source, "batch-job:" + job.Id, StringComparison.Ordinal);
+
+    private static bool CanRunDuringBatch(string command)
+    {
+        var parts = command.Split('.', 2);
+        return parts.Length == 2 &&
+            (Sbroenne.PowerPointMcp.Core.Catalog.CommandCatalog.IsReadOnly(parts[0], parts[1]) ||
+             (parts[0] == "batch" && parts[1] is "status" or "cancel" or "validate"));
+    }
+
+    /// <summary>Runs batch operations through the same dispatch path as tool calls, tagged with the job id.</summary>
+    private sealed class ServiceBatchDispatcher(PowerPointMcpService service, string sessionId) : IBatchDispatcher
+    {
+        public BatchStepOutcome Dispatch(string category, string action, string? argumentsJson, string jobId)
+        {
+            var response = service.ProcessAsync(new ServiceRequest
+            {
+                Command = $"{category}.{action}",
+                SessionId = sessionId,
+                Args = argumentsJson,
+                Source = "batch-job:" + jobId,
+            }).GetAwaiter().GetResult();
+            return new BatchStepOutcome(response.Success, response.ErrorMessage, response.Result);
         }
     }
 
