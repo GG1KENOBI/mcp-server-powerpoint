@@ -26,6 +26,11 @@ copilot plugin install sbroenne/mcp-server-powerpoint-plugins/powerpoint-mcp
 - Tables, native charts, SmartArt, images, and speaker notes
 - Layouts, masters, page setup, accessibility, and animation
 - PDF and image export for delivery and visual verification
+- Authoring tools: whole-deck inspection with stable ids and selectors, slide compositions
+  with measured fitting, editable diagrams, CSV/XLSX-bound tables and charts
+- Design profiles with migration previews, template layouts filled by role, deck-wide
+  find/replace, validation with safe repair, rendered previews, batches, and local images
+- A session-free `capabilities` tool with workflow recipes; call it first when planning
 
 The MCP server exposes one action-dispatch tool per PowerPoint domain. Tool schemas provide exact
 action names and parameters; the bundled skill adds lifecycle and workflow guidance.

@@ -569,4 +569,4 @@ On `feature/authoring-platform`, after the synthetic upstream sync `b6012a0`:
 | e57ec7a | Deck-wide find/replace and rich text editing |
 | 5d5faff | `design` apply/typography/components; `template` workflows |
 | 031d955 | `asset`, `capabilities`, local UI |
-| (this) | Documentation, demos, offline bundle, workflow test, counts |
+| ad841d6 | Documentation, demos, offline bundle, workflow test, counts |
