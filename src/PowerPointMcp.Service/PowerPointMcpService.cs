@@ -7,6 +7,7 @@ using Sbroenne.PowerPointMcp.Core.Accessibility;
 using Sbroenne.PowerPointMcp.Core.Animation;
 using Sbroenne.PowerPointMcp.Core.Chart;
 using Sbroenne.PowerPointMcp.Core.CustomShow;
+using Sbroenne.PowerPointMcp.Core.Deck;
 using Sbroenne.PowerPointMcp.Core.Export;
 using Sbroenne.PowerPointMcp.Core.Image;
 using Sbroenne.PowerPointMcp.Core.Layout;
@@ -68,6 +69,7 @@ public sealed class PowerPointMcpService : IDisposable
     private readonly AccessibilityCommands _accessibilityCommands = new();
     private readonly MediaCommands _mediaCommands = new();
     private readonly CustomShowCommands _customShowCommands = new();
+    private readonly DeckCommands _deckCommands = new();
 
     /// <summary>Gets the UTC time this daemon instance started.</summary>
     public DateTime StartTime => _startTime;
@@ -303,6 +305,9 @@ public sealed class PowerPointMcpService : IDisposable
                 "customshow" => DispatchSimple<CustomShowAction>(action, request,
                     ServiceRegistry.CustomShow.TryParseAction,
                     (a, batch) => ServiceRegistry.CustomShow.DispatchToCore(_customShowCommands, a, batch, request.Args)),
+                "deck" => DispatchSimple<DeckAction>(action, request,
+                    ServiceRegistry.Deck.TryParseAction,
+                    (a, batch) => ServiceRegistry.Deck.DispatchToCore(_deckCommands, a, batch, request.Args)),
                 _ => new ServiceResponse { Success = false, ErrorMessage = $"Unknown command category: {category}" }
             };
 
